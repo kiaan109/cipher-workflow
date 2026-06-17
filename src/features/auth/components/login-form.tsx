@@ -47,7 +47,7 @@ export function LoginForm() {
     setSocialPending("github");
     await authClient.signIn.social({ provider: "github" }, {
       onSuccess: () => router.push("/workflows"),
-      onError: () => { toast.error("Something went wrong"); setSocialPending(null); },
+      onError: (ctx) => { toast.error(ctx.error?.message ?? "Sign in failed"); setSocialPending(null); },
     });
   };
 
@@ -55,7 +55,7 @@ export function LoginForm() {
     setSocialPending("google");
     await authClient.signIn.social({ provider: "google" }, {
       onSuccess: () => router.push("/workflows"),
-      onError: () => { toast.error("Something went wrong"); setSocialPending(null); },
+      onError: (ctx) => { toast.error(ctx.error?.message ?? "Sign in failed"); setSocialPending(null); },
     });
   };
 
