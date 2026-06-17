@@ -20,11 +20,11 @@ export const openrouter = createOpenAI({
  * while costing $0 to run.
  */
 export const OPENROUTER_FREE_MODELS = {
-  OPENAI: "meta-llama/llama-3.3-8b-instruct:free",
-  ANTHROPIC: "deepseek/deepseek-r1:free",
-  GEMINI: "google/gemma-3-27b-it:free",
-  MISTRAL: "mistralai/mistral-7b-instruct:free",
-  QWEN: "qwen/qwen3-8b:free",
+  OPENAI: "openai/gpt-oss-20b:free",
+  ANTHROPIC: "openai/gpt-oss-120b:free",
+  GEMINI: "google/gemma-4-26b-a4b-it:free",
+  MISTRAL: "liquid/lfm-2.5-1.2b-instruct:free",
+  QWEN: "liquid/lfm-2.5-1.2b-instruct:free",
 } as const;
 
 export type OpenRouterAgentRole = keyof typeof OPENROUTER_FREE_MODELS;

@@ -1,11 +1,9 @@
-import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { cipherChannel } from "@/inngest/channels/cipher";
+import { renderTemplate } from "@/lib/template";
 import ky from "ky";
-
-Handlebars.registerHelper("json", (ctx) => new Handlebars.SafeString(JSON.stringify(ctx, null, 2)));
 
 type AiChainData = { variableName?: string; prompt?: string; model?: string };
 
@@ -14,8 +12,8 @@ export const aiChainExecutor: NodeExecutor<AiChainData> = async ({ data, nodeId,
   if (!data.variableName) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("AI Chain: Variable name required"); }
   if (!data.prompt) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("AI Chain: Prompt required"); }
 
-  const prompt = decode(Handlebars.compile(data.prompt)(context));
-  const model = data.model || "google/gemma-3-27b-it:free";
+  const prompt = decode(renderTemplate(data.prompt, context as Record<string, unknown>));
+  const model = data.model || "openai/gpt-oss-20b:free";
 
   try {
     const result = await step.run("ai-chain-run", async () => {

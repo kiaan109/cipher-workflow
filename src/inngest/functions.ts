@@ -1,7 +1,7 @@
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
-import { topologicalSort } from "./utils";
+import { topologicalSort, computeParallelLevels } from "./utils";
 import { ExecutionStatus, NodeType } from "@/generated/prisma";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { createBandRoom } from "@/lib/band";
@@ -102,19 +102,20 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    const sortedNodes = await step.run("prepare-workflow", async () => {
+    const { sortedNodes, parallelLevels, workflowInfo } = await step.run("prepare-workflow", async () => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: workflowId },
         include: { nodes: true, connections: true },
       });
-      return topologicalSort(workflow.nodes, workflow.connections);
-    });
-
-    const workflowInfo = await step.run("find-workflow-info", async () => {
-      return prisma.workflow.findUniqueOrThrow({
+      const info = await prisma.workflow.findUniqueOrThrow({
         where: { id: workflowId },
         select: { userId: true, name: true },
       });
+      return {
+        sortedNodes: topologicalSort(workflow.nodes, workflow.connections),
+        parallelLevels: computeParallelLevels(workflow.nodes, workflow.connections),
+        workflowInfo: info,
+      };
     });
 
     const userId = workflowInfo.userId;
@@ -141,42 +142,71 @@ export const executeWorkflow = inngest.createFunction(
     let context: Record<string, unknown> = event.data.initialData || {};
     const executionSteps: ExecutionStep[] = [];
 
-    for (const node of sortedNodes) {
-      const executor = getExecutor(node.type as NodeType);
-      try {
-        context = await executor({
-          data: node.data as Record<string, unknown>,
-          nodeId: node.id,
-          userId,
-          context,
-          step,
-          publish,
-          bandRoomId,
-        });
+    // Execute nodes level by level — nodes in the same level run in parallel
+    for (const level of parallelLevels) {
+      const levelResults = await Promise.all(
+        level.map(async (node) => {
+          const executor = getExecutor(node.type as NodeType);
+          try {
+            const result = await executor({
+              data: node.data as Record<string, unknown>,
+              nodeId: node.id,
+              userId,
+              context,
+              step,
+              publish,
+              bandRoomId,
+            });
+            const varName = (node.data as Record<string, unknown>)?.variableName as string | undefined;
+            return {
+              ok: true as const,
+              node,
+              result,
+              varName,
+            };
+          } catch (err) {
+            return {
+              ok: false as const,
+              node,
+              error: err instanceof Error ? err.message : String(err),
+              err,
+            };
+          }
+        }),
+      );
 
-        const varName = (node.data as Record<string, unknown>)?.variableName as string | undefined;
-        executionSteps.push({
-          nodeId: node.id,
-          nodeType: node.type,
-          nodeName: node.name,
-          status: "success",
-          output: varName ? context[varName] : undefined,
-          completedAt: new Date().toISOString(),
-        });
-      } catch (err) {
-        executionSteps.push({
-          nodeId: node.id,
-          nodeType: node.type,
-          nodeName: node.name,
-          status: "error",
-          error: err instanceof Error ? err.message : String(err),
-          completedAt: new Date().toISOString(),
-        });
-        throw err;
+      // Merge all parallel outputs into context, then record steps
+      for (const r of levelResults) {
+        if (r.ok) {
+          // Merge variables from each parallel node into shared context
+          if (r.varName && r.result[r.varName] !== undefined) {
+            context = { ...context, [r.varName]: r.result[r.varName] };
+          } else {
+            context = { ...context, ...r.result };
+          }
+          executionSteps.push({
+            nodeId: r.node.id,
+            nodeType: r.node.type,
+            nodeName: r.node.name,
+            status: "success",
+            output: r.varName ? context[r.varName] : undefined,
+            completedAt: new Date().toISOString(),
+          });
+        } else {
+          executionSteps.push({
+            nodeId: r.node.id,
+            nodeType: r.node.type,
+            nodeName: r.node.name,
+            status: "error",
+            error: r.error,
+            completedAt: new Date().toISOString(),
+          });
+          throw r.err;
+        }
       }
 
-      // Save intermediate progress so the execution page can show live steps
-      await step.run(`save-progress-${node.id}`, async () => {
+      // Save progress after each level completes
+      await step.run(`save-progress-level-${parallelLevels.indexOf(level)}`, async () => {
         return prisma.execution.update({
           where: { inngestEventId },
           data: { output: JSON.parse(JSON.stringify({ _steps: executionSteps, ...context })) },

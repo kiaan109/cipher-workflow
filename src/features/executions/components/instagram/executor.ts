@@ -1,4 +1,4 @@
-﻿import Handlebars from "handlebars";
+import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
@@ -11,8 +11,6 @@ Handlebars.registerHelper("json", (context) => {
 
 type InstagramData = {
   variableName?: string;
-  accessToken?: string;
-  userId?: string;
   imageUrl?: string;
   caption?: string;
 };
@@ -26,13 +24,12 @@ export const instagramExecutor: NodeExecutor<InstagramData> = async ({
 }) => {
   await publish(instagramChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.accessToken) {
+  const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+  const userId = process.env.INSTAGRAM_USER_ID;
+
+  if (!accessToken || !userId) {
     await publish(instagramChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Instagram node: Access token is required");
-  }
-  if (!data.userId) {
-    await publish(instagramChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Instagram node: User ID is required");
+    throw new NonRetriableError("Instagram node: Platform credentials not configured (INSTAGRAM_ACCESS_TOKEN / INSTAGRAM_USER_ID)");
   }
   if (!data.imageUrl) {
     await publish(instagramChannel().status({ nodeId, status: "error" }));
@@ -50,25 +47,23 @@ export const instagramExecutor: NodeExecutor<InstagramData> = async ({
 
   try {
     const result = await step.run("instagram-post-media", async () => {
-      // Step 1: Create media container
       const mediaRes = await ky.post(
-        `https://graph.facebook.com/v21.0/${data.userId}/media`,
+        `https://graph.facebook.com/v21.0/${userId}/media`,
         {
           json: {
             image_url: imageUrl,
             caption,
-            access_token: data.accessToken,
+            access_token: accessToken,
           },
         },
       ).json<{ id: string }>();
 
-      // Step 2: Publish the container
       const publishRes = await ky.post(
-        `https://graph.facebook.com/v21.0/${data.userId}/media_publish`,
+        `https://graph.facebook.com/v21.0/${userId}/media_publish`,
         {
           json: {
             creation_id: mediaRes.id,
-            access_token: data.accessToken,
+            access_token: accessToken,
           },
         },
       ).json<{ id: string }>();

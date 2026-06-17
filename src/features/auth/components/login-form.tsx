@@ -1,10 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -36,28 +34,11 @@ const labelStyle: React.CSSProperties = {
 
 export function LoginForm() {
   const router = useRouter();
-  const [socialPending, setSocialPending] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
-
-  const signInGithub = async () => {
-    setSocialPending("github");
-    await authClient.signIn.social({ provider: "github" }, {
-      onSuccess: () => router.push("/workflows"),
-      onError: (ctx) => { toast.error(ctx.error?.message ?? "Sign in failed"); setSocialPending(null); },
-    });
-  };
-
-  const signInGoogle = async () => {
-    setSocialPending("google");
-    await authClient.signIn.social({ provider: "google" }, {
-      onSuccess: () => router.push("/workflows"),
-      onError: (ctx) => { toast.error(ctx.error?.message ?? "Sign in failed"); setSocialPending(null); },
-    });
-  };
 
   const onSubmit = async (values: LoginFormValues) => {
     await authClient.signIn.email({
@@ -70,7 +51,7 @@ export function LoginForm() {
     });
   };
 
-  const isPending = form.formState.isSubmitting || !!socialPending;
+  const isPending = form.formState.isSubmitting;
 
   return (
     <div style={{
@@ -89,69 +70,6 @@ export function LoginForm() {
         Sign in to your Cipher account
       </p>
 
-      {/* Social buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: '1.75rem' }}>
-        <button
-          type="button"
-          onClick={signInGithub}
-          disabled={isPending}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            width: '100%', padding: '0.75rem',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '0.75rem',
-            color: '#fff', fontSize: 14, fontWeight: 500,
-            cursor: isPending ? 'not-allowed' : 'pointer',
-            transition: 'background 0.2s, border-color 0.2s',
-            opacity: isPending ? 0.6 : 1,
-          }}
-          onMouseEnter={e => { if (!isPending) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.09)'; }}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'}
-        >
-          {socialPending === 'github' ? (
-            <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
-          ) : (
-            <Image alt="GitHub" src="/logos/github.svg" width={18} height={18} />
-          )}
-          Continue with GitHub
-        </button>
-
-        <button
-          type="button"
-          onClick={signInGoogle}
-          disabled={isPending}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            width: '100%', padding: '0.75rem',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '0.75rem',
-            color: '#fff', fontSize: 14, fontWeight: 500,
-            cursor: isPending ? 'not-allowed' : 'pointer',
-            transition: 'background 0.2s',
-            opacity: isPending ? 0.6 : 1,
-          }}
-          onMouseEnter={e => { if (!isPending) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.09)'; }}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'}
-        >
-          {socialPending === 'google' ? (
-            <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
-          ) : (
-            <Image alt="Google" src="/logos/google.svg" width={18} height={18} />
-          )}
-          Continue with Google
-        </button>
-      </div>
-
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.75rem' }}>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>or</span>
-        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-      </div>
-
-      {/* Email form */}
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}.auth-input:focus{border-color:rgba(59,130,246,0.6)!important;box-shadow:0 0 0 3px rgba(59,130,246,0.1)!important;}`}</style>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: '1.5rem' }}>
@@ -199,7 +117,7 @@ export function LoginForm() {
           onMouseEnter={e => { if (!isPending) { (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 50px rgba(59,130,246,0.5)'; } }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(59,130,246,0.3)'; }}
         >
-          {form.formState.isSubmitting ? 'Signing in...' : 'Sign in →'}
+          {isPending ? 'Signing in...' : 'Sign in →'}
         </button>
       </form>
 

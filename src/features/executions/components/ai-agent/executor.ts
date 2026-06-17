@@ -28,7 +28,7 @@ export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId,
     throw new NonRetriableError("AI Agent: Prompt is required");
   }
 
-  const model = data.model || "google/gemma-3-27b-it:free";
+  const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = decode(Handlebars.compile(data.systemPrompt || "You are a helpful AI agent. Complete the task given to you.")(context));
   const userPrompt = decode(Handlebars.compile(data.userPrompt)(context));
 

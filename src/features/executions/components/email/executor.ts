@@ -1,22 +1,15 @@
-﻿import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { emailChannel } from "@/inngest/channels/email";
+import { renderTemplate } from "@/lib/template";
 import ky from "ky";
-
-Handlebars.registerHelper("json", (context) => {
-  return new Handlebars.SafeString(JSON.stringify(context, null, 2));
-});
 
 type EmailData = {
   variableName?: string;
-  apiKey?: string;
   to?: string;
   subject?: string;
   body?: string;
-  fromEmail?: string;
-  fromName?: string;
 };
 
 export const emailExecutor: NodeExecutor<EmailData> = async ({
@@ -28,9 +21,12 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
 }) => {
   await publish(emailChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.apiKey) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
+  if (!apiKey) {
     await publish(emailChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Email node: SendGrid API key is required");
+    throw new NonRetriableError("Email node: RESEND_API_KEY not configured");
   }
   if (!data.to) {
     await publish(emailChannel().status({ nodeId, status: "error" }));
@@ -49,22 +45,21 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
     throw new NonRetriableError("Email node: Variable name is required");
   }
 
-  const subject = decode(Handlebars.compile(data.subject)(context));
-  const body = decode(Handlebars.compile(data.body)(context));
-  const fromEmail = data.fromEmail || "noreply@cipher.app";
-  const fromName = data.fromName || "Cipher";
+  const subject = decode(renderTemplate(data.subject, context as Record<string, unknown>));
+  const body = decode(renderTemplate(data.body, context as Record<string, unknown>));
 
   try {
     const result = await step.run("email-send", async () => {
-      await ky.post("https://api.sendgrid.com/v3/mail/send", {
+      await ky.post("https://api.resend.com/emails", {
         headers: {
-          Authorization: `Bearer ${data.apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         json: {
-          personalizations: [{ to: [{ email: data.to }], subject }],
-          from: { email: fromEmail, name: fromName },
-          content: [{ type: "text/html", value: body }],
+          from: fromEmail,
+          to: [data.to],
+          subject,
+          text: body,
         },
       });
 

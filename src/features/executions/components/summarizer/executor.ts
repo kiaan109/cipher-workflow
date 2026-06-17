@@ -16,7 +16,7 @@ export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, n
 
   const text = decode(Handlebars.compile(data.text)(context));
   const style = data.style || "concise";
-  const model = data.model || "google/gemma-3-27b-it:free";
+  const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = `You are an expert summarizer. Summarize the following text in a ${style} manner. Return only the summary, no preamble.`;
 
   try {

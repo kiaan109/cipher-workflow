@@ -1,4 +1,4 @@
-﻿import Handlebars from "handlebars";
+import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
@@ -11,8 +11,6 @@ Handlebars.registerHelper("json", (context) => {
 
 type WhatsAppData = {
   variableName?: string;
-  accessToken?: string;
-  phoneNumberId?: string;
   to?: string;
   message?: string;
 };
@@ -26,13 +24,12 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
 }) => {
   await publish(whatsappChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.accessToken) {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+  if (!accessToken || !phoneNumberId) {
     await publish(whatsappChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("WhatsApp node: Access token is required");
-  }
-  if (!data.phoneNumberId) {
-    await publish(whatsappChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("WhatsApp node: Phone number ID is required");
+    throw new NonRetriableError("WhatsApp node: Platform credentials not configured (WHATSAPP_ACCESS_TOKEN / WHATSAPP_PHONE_NUMBER_ID)");
   }
   if (!data.to) {
     await publish(whatsappChannel().status({ nodeId, status: "error" }));
@@ -52,10 +49,10 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
   try {
     const result = await step.run("whatsapp-send-message", async () => {
       const response = await ky.post(
-        `https://graph.facebook.com/v21.0/${data.phoneNumberId}/messages`,
+        `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
         {
           headers: {
-            Authorization: `Bearer ${data.accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           json: {
             messaging_product: "whatsapp",
@@ -70,6 +67,7 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
         ...context,
         [data.variableName!]: {
           messageId: response.messages[0]?.id,
+          to: data.to,
           message,
         },
       };

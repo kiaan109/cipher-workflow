@@ -4,13 +4,15 @@ import { AiAssistant } from "@/components/ai-assistant";
 
 const Layout = ({ children }: { children: React.ReactNode; }) => {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="bg-accent/20">
-        {children}
-      </SidebarInset>
-      <AiAssistant />
-    </SidebarProvider>
+    <div className="dark h-full min-h-dvh">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="bg-background">
+          {children}
+        </SidebarInset>
+        <AiAssistant />
+      </SidebarProvider>
+    </div>
   );
 };
 

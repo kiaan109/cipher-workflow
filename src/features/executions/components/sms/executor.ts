@@ -1,4 +1,4 @@
-﻿import Handlebars from "handlebars";
+import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
@@ -11,10 +11,7 @@ Handlebars.registerHelper("json", (context) => {
 
 type SmsData = {
   variableName?: string;
-  accountSid?: string;
-  authToken?: string;
   to?: string;
-  from?: string;
   body?: string;
 };
 
@@ -27,21 +24,17 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 }) => {
   await publish(smsChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.accountSid) {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const from = process.env.TWILIO_FROM_NUMBER;
+
+  if (!accountSid || !authToken || !from) {
     await publish(smsChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("SMS node: Account SID is required");
-  }
-  if (!data.authToken) {
-    await publish(smsChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("SMS node: Auth token is required");
+    throw new NonRetriableError("SMS node: Platform Twilio credentials not configured (TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER)");
   }
   if (!data.to) {
     await publish(smsChannel().status({ nodeId, status: "error" }));
     throw new NonRetriableError("SMS node: Recipient phone number is required");
-  }
-  if (!data.from) {
-    await publish(smsChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("SMS node: Sender phone number is required");
   }
   if (!data.body) {
     await publish(smsChannel().status({ nodeId, status: "error" }));
@@ -56,11 +49,11 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 
   try {
     const result = await step.run("sms-send", async () => {
-      const credentials = Buffer.from(`${data.accountSid}:${data.authToken}`).toString("base64");
-      const params = new URLSearchParams({ To: data.to!, From: data.from!, Body: body });
+      const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+      const params = new URLSearchParams({ To: data.to!, From: from, Body: body });
 
       const response = await ky.post(
-        `https://api.twilio.com/2010-04-01/Accounts/${data.accountSid}/Messages.json`,
+        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
         {
           headers: {
             Authorization: `Basic ${credentials}`,
@@ -72,7 +65,7 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 
       return {
         ...context,
-        [data.variableName!]: { messageSid: response.sid, status: response.status, body },
+        [data.variableName!]: { messageSid: response.sid, status: response.status, to: data.to, body },
       };
     });
 

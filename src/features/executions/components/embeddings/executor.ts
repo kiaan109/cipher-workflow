@@ -19,8 +19,13 @@ export const embeddingsExecutor: NodeExecutor<EmbeddingsData> = async ({ data, n
 
   try {
     const result = await step.run("embeddings-run", async () => {
-      const res = await ky.post("https://api.openai.com/v1/embeddings", {
-        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+      const res = await ky.post("https://openrouter.ai/api/v1/embeddings", {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://cipher-app-tau.vercel.app",
+          "X-Title": "Cipher",
+        },
         json: { model, input: text },
         timeout: 30000,
       }).json<{ data: { embedding: number[] }[] }>();

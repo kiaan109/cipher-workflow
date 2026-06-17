@@ -1,66 +1,32 @@
-import Handlebars from "handlebars";
 import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { openAiChannel } from "@/inngest/channels/openai";
 import { sendBandMessage } from "@/lib/band";
-import ky from "ky";
-
-Handlebars.registerHelper("json", (ctx) => new Handlebars.SafeString(JSON.stringify(ctx, null, 2)));
+import { renderTemplate } from "@/lib/template";
+import { callLLM } from "@/lib/llm";
 
 const AGENT_NAME = "OpenAI Agent";
-const MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
 type OpenAiData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
 export const openAiExecutor: NodeExecutor<OpenAiData> = async ({ data, nodeId, context, step, publish, bandRoomId }) => {
   await publish(openAiChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.variableName) {
-    await publish(openAiChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("OpenAI node: Variable name is missing");
-  }
-  if (!data.userPrompt) {
-    await publish(openAiChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("OpenAI node: User prompt is missing");
-  }
+  if (!data.variableName) { await publish(openAiChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("OpenAI node: Variable name is missing"); }
+  if (!data.userPrompt) { await publish(openAiChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("OpenAI node: User prompt is missing"); }
 
-  const systemPrompt = data.systemPrompt
-    ? decode(Handlebars.compile(data.systemPrompt)(context))
-    : "You are a helpful assistant.";
-  const userPrompt = decode(Handlebars.compile(data.userPrompt)(context));
+  const ctx = context as Record<string, unknown>;
+  const systemPrompt = data.systemPrompt ? decode(renderTemplate(data.systemPrompt, ctx)) : "You are a helpful assistant.";
+  const userPrompt = decode(renderTemplate(data.userPrompt, ctx));
 
-  if (bandRoomId) {
-    await step.run("band-post-prompt", () => sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`));
-  }
+  if (bandRoomId) await step.run("band-post-prompt", () => sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`));
 
   try {
-    const result = await step.run("openai-generate", async () => {
-      const res = await ky.post("https://openrouter.ai/api/v1/chat/completions", {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://cipher-app-tau.vercel.app",
-          "X-Title": "Cipher OpenAI Agent",
-        },
-        json: {
-          model: MODEL,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-        },
-        timeout: 60000,
-      }).json<{ choices: { message: { content: string } }[] }>();
-      return res.choices[0]?.message?.content || "";
-    });
-
-    const text = result;
-
-    if (bandRoomId) {
-      await step.run("band-post-response", () => sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`));
-    }
-
+    const text = await step.run("openai-generate", () =>
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "openai/gpt-oss-20b:free"),
+    );
+    if (bandRoomId) await step.run("band-post-response", () => sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`));
     await publish(openAiChannel().status({ nodeId, status: "success" }));
     return { ...context, [data.variableName]: { text } };
   } catch (error) {

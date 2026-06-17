@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -16,12 +16,9 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
-  apiKey: z.string().min(1, "SendGrid API key is required"),
   to: z.string().min(1, "Recipient email is required"),
   subject: z.string().min(1, "Subject is required"),
   body: z.string().min(1, "Body is required"),
-  fromEmail: z.string().optional(),
-  fromName: z.string().optional(),
 });
 
 export type EmailFormValues = z.infer<typeof formSchema>;
@@ -36,11 +33,11 @@ interface Props {
 export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<EmailFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", apiKey: "", to: "", subject: "", body: "", fromEmail: "", fromName: "", ...defaultValues },
+    defaultValues: { variableName: "", to: "", subject: "", body: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", apiKey: "", to: "", subject: "", body: "", fromEmail: "", fromName: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", to: "", subject: "", body: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myEmail";
@@ -49,8 +46,8 @@ export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Email Configuration</DialogTitle>
-          <DialogDescription>Send an email via SendGrid.</DialogDescription>
+          <DialogTitle>Email</DialogTitle>
+          <DialogDescription>Send an email via the platform mail account.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
@@ -62,18 +59,11 @@ export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }
                 <FormMessage />
               </FormItem>
             )} />
-            <FormField control={form.control} name="apiKey" render={({ field }) => (
-              <FormItem>
-                <FormLabel>SendGrid API Key</FormLabel>
-                <FormControl><Input type="password" placeholder="SG...." {...field} /></FormControl>
-                <FormDescription>From SendGrid API Keys settings</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
             <FormField control={form.control} name="to" render={({ field }) => (
               <FormItem>
-                <FormLabel>To</FormLabel>
-                <FormControl><Input placeholder="user@example.com" {...field} /></FormControl>
+                <FormLabel>To (Email)</FormLabel>
+                <FormControl><Input placeholder="you@example.com" {...field} /></FormControl>
+                <FormDescription>Any email address. Supports Handlebars variables.</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
@@ -87,16 +77,9 @@ export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }
             )} />
             <FormField control={form.control} name="body" render={({ field }) => (
               <FormItem>
-                <FormLabel>Body (HTML)</FormLabel>
-                <FormControl><Textarea placeholder="<p>{{myAI.text}}</p>" className="min-h-[100px] font-mono text-sm" {...field} /></FormControl>
-                <FormDescription>HTML supported. Supports Handlebars variables.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="fromEmail" render={({ field }) => (
-              <FormItem>
-                <FormLabel>From Email (Optional)</FormLabel>
-                <FormControl><Input placeholder="noreply@cipher.app" {...field} /></FormControl>
+                <FormLabel>Body</FormLabel>
+                <FormControl><Textarea placeholder="Hi there! Your order {{myData.orderId}} is confirmed." className="min-h-[100px]" {...field} /></FormControl>
+                <FormDescription>Supports Handlebars variables</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />

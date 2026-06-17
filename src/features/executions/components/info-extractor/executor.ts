@@ -16,7 +16,7 @@ export const infoExtractorExecutor: NodeExecutor<InfoExtractorData> = async ({ d
 
   const text = decode(Handlebars.compile(data.text)(context));
   const schema = data.schema || "{ name, email, phone, company }";
-  const model = data.model || "google/gemma-3-27b-it:free";
+  const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = `Extract structured information from the text. Return a JSON object matching this schema: ${schema}. Use null for missing fields.`;
 
   try {

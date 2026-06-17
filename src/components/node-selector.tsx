@@ -113,7 +113,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
         position: flowPosition,
         type: selection.type,
       };
-      return hasInitialTrigger ? [newNode] : [...nodes, newNode];
+      return [...nodes, newNode];
     });
 
     onOpenChange(false);

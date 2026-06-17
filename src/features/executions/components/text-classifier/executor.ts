@@ -17,7 +17,7 @@ export const textClassifierExecutor: NodeExecutor<TextClassifierData> = async ({
 
   const text = decode(Handlebars.compile(data.text)(context));
   const categories = data.categories;
-  const model = data.model || "google/gemma-3-27b-it:free";
+  const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = `Classify the given text into exactly one of these categories: ${categories}. Respond with JSON: {"category": "...", "confidence": 0.0-1.0, "reasoning": "..."}`;
 
   try {

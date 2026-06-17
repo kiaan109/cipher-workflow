@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback, useMemo } from 'react';
-import { 
-  ReactFlow, 
-  applyNodeChanges, 
-  applyEdgeChanges, 
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import {
+  ReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
   addEdge,
   type Node,
   type Edge,
@@ -17,13 +17,13 @@ import {
   Panel,
 } from '@xyflow/react';
 import { ErrorView, LoadingView } from "@/components/entity-components";
-import { useSuspenseWorkflow } from "@/features/workflows/hooks/use-workflows";
+import { useSuspenseWorkflow, useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
 
 import '@xyflow/react/dist/style.css';
 import { nodeComponents } from '@/config/node-components';
 import { AddNodeButton } from './add-node-button';
 import { useSetAtom } from 'jotai';
-import { editorAtom } from '../store/atoms';
+import { editorAtom, editorSettersAtom } from '../store/atoms';
 import { NodeType } from '@/generated/prisma';
 import { ExecuteWorkflowButton } from './execute-workflow-button';
 
@@ -36,14 +36,39 @@ export const EditorError = () => {
 };
 
 export const Editor = ({ workflowId }: { workflowId: string }) => {
-  const { 
+  const {
     data: workflow
   } = useSuspenseWorkflow(workflowId);
 
   const setEditor = useSetAtom(editorAtom);
+  const setEditorSetters = useSetAtom(editorSettersAtom);
+  const saveWorkflow = useUpdateWorkflow();
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
 
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
+
+  // Expose state setters so Cipher AI can inject nodes/edges from outside
+  useEffect(() => {
+    setEditorSetters({ setNodes, setEdges });
+    return () => setEditorSetters(null);
+  }, [setEditorSetters, setNodes, setEdges]);
+
+  const triggerAutoSave = useCallback((currentNodes: Node[], currentEdges: Edge[]) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      saveWorkflow.mutate({ id: workflowId, nodes: currentNodes, edges: currentEdges });
+    }, 1500);
+  }, [workflowId, saveWorkflow]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    triggerAutoSave(nodes, edges);
+  }, [nodes, edges]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
@@ -59,7 +84,7 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
   );
 
   const hasManualTrigger = useMemo(() => {
-    return nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER);
+    return nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER || node.type === NodeType.INITIAL);
   }, [nodes]);
 
   return (
