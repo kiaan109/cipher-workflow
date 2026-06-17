@@ -23,6 +23,8 @@ export const OPENROUTER_FREE_MODELS = {
   OPENAI: "meta-llama/llama-3.3-8b-instruct:free",
   ANTHROPIC: "deepseek/deepseek-r1:free",
   GEMINI: "google/gemma-3-27b-it:free",
+  MISTRAL: "mistralai/mistral-7b-instruct:free",
+  QWEN: "qwen/qwen3-8b:free",
 } as const;
 
 export type OpenRouterAgentRole = keyof typeof OPENROUTER_FREE_MODELS;

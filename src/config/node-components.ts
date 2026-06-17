@@ -11,6 +11,33 @@ import { OpenAiNode } from "@/features/executions/components/openai/node";
 import { AnthropicNode } from "@/features/executions/components/anthropic/node";
 import { DiscordNode } from "@/features/executions/components/discord/node";
 import { SlackNode } from "@/features/executions/components/slack/node";
+import { TwitterNode } from "@/features/executions/components/twitter/node";
+import { TelegramNode } from "@/features/executions/components/telegram/node";
+import { LinkedInNode } from "@/features/executions/components/linkedin/node";
+import { InstagramNode } from "@/features/executions/components/instagram/node";
+import { WhatsAppNode } from "@/features/executions/components/whatsapp/node";
+import { MistralNode } from "@/features/executions/components/mistral/node";
+import { QwenNode } from "@/features/executions/components/qwen/node";
+import { EmailNode } from "@/features/executions/components/email/node";
+import { NotionNode } from "@/features/executions/components/notion/node";
+import { GoogleSheetsNode } from "@/features/executions/components/google-sheets/node";
+import { GitHubNode } from "@/features/executions/components/github/node";
+import { RssFeedNode } from "@/features/executions/components/rss-feed/node";
+import { SmsNode } from "@/features/executions/components/sms/node";
+import { UniversalNode } from "@/features/executions/components/universal/node";
+import { AiAgentNode } from "@/features/executions/components/ai-agent/node";
+import { AiChainNode } from "@/features/executions/components/ai-chain/node";
+import { SummarizerNode } from "@/features/executions/components/summarizer/node";
+import { TextClassifierNode } from "@/features/executions/components/text-classifier/node";
+import { InfoExtractorNode } from "@/features/executions/components/info-extractor/node";
+import { OutputParserNode } from "@/features/executions/components/output-parser/node";
+import { DocLoaderNode } from "@/features/executions/components/doc-loader/node";
+import { TextSplitterNode } from "@/features/executions/components/text-splitter/node";
+import { AiMemoryNode } from "@/features/executions/components/ai-memory/node";
+import { EmbeddingsNode } from "@/features/executions/components/embeddings/node";
+import { VectorStoreNode } from "@/features/executions/components/vector-store/node";
+import { WebhookTriggerNode } from "@/features/triggers/components/webhook-trigger/node";
+import { ScheduleTriggerNode } from "@/features/triggers/components/schedule-trigger/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -23,6 +50,33 @@ export const nodeComponents = {
   [NodeType.ANTHROPIC]: AnthropicNode,
   [NodeType.DISCORD]: DiscordNode,
   [NodeType.SLACK]: SlackNode,
+  [NodeType.TWITTER]: TwitterNode,
+  [NodeType.TELEGRAM]: TelegramNode,
+  [NodeType.LINKEDIN]: LinkedInNode,
+  [NodeType.INSTAGRAM]: InstagramNode,
+  [NodeType.WHATSAPP]: WhatsAppNode,
+  [NodeType.MISTRAL]: MistralNode,
+  [NodeType.QWEN]: QwenNode,
+  [NodeType.EMAIL]: EmailNode,
+  [NodeType.NOTION]: NotionNode,
+  [NodeType.GOOGLE_SHEETS]: GoogleSheetsNode,
+  [NodeType.GITHUB]: GitHubNode,
+  [NodeType.RSS_FEED]: RssFeedNode,
+  [NodeType.SMS]: SmsNode,
+  [NodeType.UNIVERSAL]: UniversalNode,
+  [NodeType.AI_AGENT]: AiAgentNode,
+  [NodeType.AI_CHAIN]: AiChainNode,
+  [NodeType.SUMMARIZER]: SummarizerNode,
+  [NodeType.TEXT_CLASSIFIER]: TextClassifierNode,
+  [NodeType.INFO_EXTRACTOR]: InfoExtractorNode,
+  [NodeType.OUTPUT_PARSER]: OutputParserNode,
+  [NodeType.DOC_LOADER]: DocLoaderNode,
+  [NodeType.TEXT_SPLITTER]: TextSplitterNode,
+  [NodeType.AI_MEMORY]: AiMemoryNode,
+  [NodeType.EMBEDDINGS]: EmbeddingsNode,
+  [NodeType.VECTOR_STORE]: VectorStoreNode,
+  [NodeType.WEBHOOK_TRIGGER]: WebhookTriggerNode,
+  [NodeType.SCHEDULE_TRIGGER]: ScheduleTriggerNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

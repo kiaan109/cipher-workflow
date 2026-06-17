@@ -51,11 +51,14 @@ export const topologicalSort = (
 
 export const sendWorkflowExecution = async (data: {
   workflowId: string;
-  [key: string]: any;
+  eventId?: string;
+  initialData?: Record<string, unknown>;
+  [key: string]: unknown;
 }) => {
+  const { eventId, ...rest } = data;
   return inngest.send({
     name: "workflows/execute.workflow",
-    data,
-    id: createId(),
+    data: rest,
+    id: eventId ?? createId(),
   });
 };
