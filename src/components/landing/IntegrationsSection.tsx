@@ -1,40 +1,97 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-const ROW1 = [
-  'Slack','GitHub','Notion','Linear','Jira','Figma','Stripe','Twilio',
-  'Airtable','HubSpot','Salesforce','Zendesk','Asana','Monday.com','Trello','Intercom',
-  'Mailchimp','Shopify','BigCommerce','Webflow','WordPress','Zapier','n8n','Make',
-  'OpenAI','Anthropic','Gemini','Mistral','Groq','Cohere','Pinecone','Weaviate',
-];
-const ROW2 = [
-  'PostgreSQL','MySQL','MongoDB','Redis','Supabase','Firebase','PlanetScale','Turso',
-  'AWS','GCP','Azure','Cloudflare','Vercel','Railway','Fly.io','Render',
-  'Discord','Telegram','WhatsApp','SMS','Email','Webhooks','REST','GraphQL',
-  'Spotify','YouTube','Twitter','LinkedIn','Instagram','TikTok','Dribbble','Behance',
+type Integration = { name: string; logo: string };
+
+const ROW1: Integration[] = [
+  { name: 'Slack',        logo: '/logos/slack.svg' },
+  { name: 'GitHub',       logo: '/logos/github.svg' },
+  { name: 'Notion',       logo: '/logos/notion.svg' },
+  { name: 'Linear',       logo: '/logos/linear.svg' },
+  { name: 'Jira',         logo: '/logos/jira.svg' },
+  { name: 'Stripe',       logo: '/logos/stripe.svg' },
+  { name: 'Airtable',     logo: '/logos/airtable.svg' },
+  { name: 'HubSpot',      logo: '/logos/hubspot.svg' },
+  { name: 'Salesforce',   logo: '/logos/salesforce.svg' },
+  { name: 'Zendesk',      logo: '/logos/zendesk.svg' },
+  { name: 'Asana',        logo: '/logos/asana.svg' },
+  { name: 'Trello',       logo: '/logos/trello.svg' },
+  { name: 'Mailchimp',    logo: '/logos/mailchimp.svg' },
+  { name: 'Shopify',      logo: '/logos/shopify.svg' },
+  { name: 'OpenAI',       logo: '/logos/openai.svg' },
+  { name: 'Anthropic',    logo: '/logos/anthropic.svg' },
+  { name: 'Gemini',       logo: '/logos/gemini.svg' },
+  { name: 'Mistral',      logo: '/logos/mistral.svg' },
+  { name: 'Discord',      logo: '/logos/discord.svg' },
+  { name: 'ClickUp',      logo: '/logos/clickup.svg' },
+  { name: 'Mixpanel',     logo: '/logos/mixpanel.svg' },
+  { name: 'Zoom',         logo: '/logos/zoom.svg' },
 ];
 
-function IntegrationRow({ items, reverse }: { items: string[]; reverse?: boolean }) {
+const ROW2: Integration[] = [
+  { name: 'Telegram',      logo: '/logos/telegram.svg' },
+  { name: 'WhatsApp',      logo: '/logos/whatsapp.svg' },
+  { name: 'SMS',           logo: '/logos/sms.svg' },
+  { name: 'Email',         logo: '/logos/email.svg' },
+  { name: 'Supabase',      logo: '/logos/supabase.svg' },
+  { name: 'Firebase',      logo: '/logos/firebase.svg' },
+  { name: 'Spotify',       logo: '/logos/spotify.svg' },
+  { name: 'YouTube',       logo: '/logos/youtube.svg' },
+  { name: 'Twitter',       logo: '/logos/twitter.svg' },
+  { name: 'LinkedIn',      logo: '/logos/linkedin.svg' },
+  { name: 'Instagram',     logo: '/logos/instagram.svg' },
+  { name: 'Google Sheets', logo: '/logos/google-sheets.svg' },
+  { name: 'Vercel',        logo: '/logos/vercel-api.svg' },
+  { name: 'SendGrid',      logo: '/logos/sendgrid.svg' },
+  { name: 'Dropbox',       logo: '/logos/dropbox.svg' },
+  { name: 'Qwen',          logo: '/logos/qwen.svg' },
+  { name: 'Notion',        logo: '/logos/notion.svg' },
+  { name: 'RSS',           logo: '/logos/rss.svg' },
+  { name: 'Google Forms',  logo: '/logos/googleform.svg' },
+  { name: 'Slack',         logo: '/logos/slack.svg' },
+  { name: 'Stripe',        logo: '/logos/stripe.svg' },
+  { name: 'Discord',       logo: '/logos/discord.svg' },
+];
+
+function IntegrationPill({ name, logo }: Integration) {
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 9,
+      padding: '0.5rem 1rem 0.5rem 0.6rem',
+      background: 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 9999, flexShrink: 0, whiteSpace: 'nowrap',
+      transition: 'border-color 0.2s, background 0.2s',
+    }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+        background: 'rgba(255,255,255,0.08)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 4,
+      }}>
+        <Image src={logo} alt={name} width={18} height={18} style={{ objectFit: 'contain', display: 'block' }} />
+      </div>
+      <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)' }}>{name}</span>
+    </div>
+  );
+}
+
+function IntegrationRow({ items, reverse }: { items: Integration[]; reverse?: boolean }) {
   const doubled = [...items, ...items];
   return (
-    <div style={{ overflow: 'hidden', mask: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', WebkitMask: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
+    <div style={{
+      overflow: 'hidden',
+      mask: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+      WebkitMask: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+    }}>
       <div style={{
-        display: 'flex', gap: 12, width: 'max-content',
-        animation: `lp-marquee${reverse ? '-reverse' : ''} 35s linear infinite`,
+        display: 'flex', gap: 10, width: 'max-content',
+        animation: `lp-marquee${reverse ? '-reverse' : ''} 40s linear infinite`,
       }}>
-        {doubled.map((name, i) => (
-          <div key={i} className="liquid-glass" style={{
-            borderRadius: '0.625rem', padding: '0.5rem 1rem', flexShrink: 0,
-            display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
-          }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-              background: `hsl(${(i * 47) % 360},65%,55%)`,
-              opacity: 0.8,
-            }} />
-            <span style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>{name}</span>
-          </div>
+        {doubled.map((item, i) => (
+          <IntegrationPill key={`${item.name}-${i}`} {...item} />
         ))}
       </div>
     </div>
@@ -52,6 +109,7 @@ export default function IntegrationsSection() {
           transition={{ duration: 0.6 }}
           style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '1.25rem' }}
         >// Integrations</motion.p>
+
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -62,6 +120,7 @@ export default function IntegrationsSection() {
         >
           <span className="accent-gradient-text">1,431+</span> integrations.<br />Works with everything.
         </motion.h2>
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -73,7 +132,7 @@ export default function IntegrationsSection() {
         </motion.p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <IntegrationRow items={ROW1} />
         <IntegrationRow items={ROW2} reverse />
       </div>
