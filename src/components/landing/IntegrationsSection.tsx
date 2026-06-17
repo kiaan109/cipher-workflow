@@ -43,7 +43,7 @@ function IntegrationRow({ items, reverse }: { items: string[]; reverse?: boolean
 
 export default function IntegrationsSection() {
   return (
-    <section style={{ background: '#000', padding: '7rem 0', overflow: 'hidden' }}>
+    <section id="integrations" style={{ background: '#000', padding: '7rem 0', overflow: 'hidden' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1.5rem', textAlign: 'center', marginBottom: '4rem' }}>
         <motion.p
           initial={{ opacity: 0, y: 20 }}

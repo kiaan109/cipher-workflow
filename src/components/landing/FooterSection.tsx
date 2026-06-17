@@ -31,17 +31,17 @@ export default function FooterSection() {
           Start building<br /><span className="accent-gradient-text">your agent team</span><br />today.
         </h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          <Link href="https://cipher-app-tau.vercel.app" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/signup" style={{ textDecoration: 'none' }}>
             <div className="lp-pulse-glow" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               borderRadius: 9999, padding: '1.125rem 2.5rem',
               background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
               fontSize: 15, fontWeight: 700, color: '#fff', cursor: 'none',
             }}>
-              Launch Cipher Free →
+              Start Building Free →
             </div>
           </Link>
-          <Link href="https://cipher-app-tau.vercel.app" target="_blank" className="liquid-glass" style={{
+          <Link href="https://github.com/kiaan109/cipher-workflow" target="_blank" className="liquid-glass" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             borderRadius: 9999, padding: '1.125rem 2.5rem',
             fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.7)',

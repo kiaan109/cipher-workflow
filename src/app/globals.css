@@ -323,3 +323,5 @@
 
 .landing-page { cursor: none; }
 .landing-page * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }

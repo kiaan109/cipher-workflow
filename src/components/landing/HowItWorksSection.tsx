@@ -12,7 +12,7 @@ const STEPS = [
 
 export default function HowItWorksSection() {
   return (
-    <section style={{ background: '#000', padding: '7rem 1.5rem', overflow: 'hidden' }}>
+    <section id="how-it-works" style={{ background: '#000', padding: '7rem 1.5rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         {/* Header */}
         <motion.div

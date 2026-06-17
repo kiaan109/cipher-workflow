@@ -60,16 +60,22 @@ export default function LandingNavbar() {
         {/* Center links — desktop */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}
           className="hidden md:flex">
-          {['Features','How It Works','Integrations','Pricing','Demo'].map(l => (
-            <button key={l} style={{
+          {[
+            { label: 'Features', href: '#features' },
+            { label: 'How It Works', href: '#how-it-works' },
+            { label: 'Integrations', href: '#integrations' },
+            { label: 'Demo', href: '/demo' },
+          ].map(({ label, href }) => (
+            <a key={label} href={href} style={{
               fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.6)',
               background: 'transparent', border: 'none', cursor: 'none',
               padding: '0.45rem 0.875rem', borderRadius: 9999,
               transition: 'color 0.15s, background 0.15s',
+              textDecoration: 'none',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-            >{l}</button>
+            >{label}</a>
           ))}
         </div>
 

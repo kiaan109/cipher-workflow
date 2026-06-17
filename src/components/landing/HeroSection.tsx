@@ -87,7 +87,7 @@ export default function HeroSection() {
         <motion.div {...fadeUp(1.05)} style={{
           display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '2.5rem',
         }}>
-          <Link href="https://cipher-app-tau.vercel.app" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/signup" style={{ textDecoration: 'none' }}>
             <div className="liquid-glass-strong lp-pulse-glow" style={{
               borderRadius: 9999, padding: '1rem 2.25rem',
               display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -97,17 +97,19 @@ export default function HeroSection() {
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
             >
-              Launch Canvas →
+              Start Building Free →
             </div>
           </Link>
-          <button style={{
-            borderRadius: 9999, padding: '1rem 2.25rem', border: '1px solid rgba(255,255,255,0.18)',
-            fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.7)', background: 'transparent',
-            cursor: 'none', transition: 'background 0.2s, color 0.2s',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
-          >Watch Demo ▶</button>
+          <Link href="/demo" style={{ textDecoration: 'none' }}>
+            <div style={{
+              borderRadius: 9999, padding: '1rem 2.25rem', border: '1px solid rgba(255,255,255,0.18)',
+              fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.7)', background: 'transparent',
+              cursor: 'none', transition: 'background 0.2s, color 0.2s', display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
+            >Watch Demo ▶</div>
+          </Link>
         </motion.div>
 
         {/* Stats */}

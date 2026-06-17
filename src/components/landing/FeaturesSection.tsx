@@ -132,7 +132,7 @@ const CARDS = [
 
 export default function FeaturesSection() {
   return (
-    <section style={{ background: '#000', padding: '7rem 1.5rem' }}>
+    <section id="features" style={{ background: '#000', padding: '7rem 1.5rem' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
