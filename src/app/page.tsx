@@ -11,8 +11,6 @@ import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import BandIntegrationSection from '@/components/landing/BandIntegrationSection';
 import FeaturesSection from '@/components/landing/FeaturesSection';
 import IntegrationsSection from '@/components/landing/IntegrationsSection';
-import StatsSection from '@/components/landing/StatsSection';
-import JudgesSection from '@/components/landing/JudgesSection';
 import FooterSection from '@/components/landing/FooterSection';
 
 export default function LandingPage() {
@@ -38,8 +36,6 @@ export default function LandingPage() {
             <BandIntegrationSection />
             <FeaturesSection />
             <IntegrationsSection />
-            <StatsSection />
-            <JudgesSection />
           </main>
           <FooterSection />
         </>
