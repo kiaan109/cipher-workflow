@@ -1,4 +1,4 @@
-import { decode } from "html-entities";
+﻿import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { qwenChannel } from "@/inngest/channels/qwen";
@@ -20,13 +20,13 @@ export const qwenExecutor: NodeExecutor<QwenData> = async ({ data, nodeId, conte
   const systemPrompt = data.systemPrompt ? decode(renderTemplate(data.systemPrompt, ctx)) : "You are a helpful assistant.";
   const userPrompt = decode(renderTemplate(data.userPrompt, ctx));
 
-  if (bandRoomId) await step.run("band-post-prompt", () => sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`));
+  if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`);
 
   try {
-    const text = await step.run("qwen-generate", () =>
+    const text = await step.run(`qwen-generate-${nodeId}`, () =>
       callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "liquid/lfm-2.5-1.2b-instruct:free"),
     );
-    if (bandRoomId) await step.run("band-post-response", () => sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`));
+    if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(qwenChannel().status({ nodeId, status: "success" }));
     return { ...context, [data.variableName]: { text } };
   } catch (error) {
@@ -34,3 +34,5 @@ export const qwenExecutor: NodeExecutor<QwenData> = async ({ data, nodeId, conte
     throw error;
   }
 };
+
+

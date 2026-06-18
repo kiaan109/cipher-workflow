@@ -1,4 +1,4 @@
-import { NonRetriableError } from "inngest";
+﻿import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
 import { topologicalSort, computeParallelLevels } from "./utils";
@@ -96,7 +96,6 @@ export const executeWorkflow = inngest.createFunction(
       throw new NonRetriableError("Event ID or workflow ID is missing");
     }
 
-    // Upsert so execution created pre-flight (in the tRPC mutation) is reused
     await step.run("ensure-execution", async () => {
       return prisma.execution.upsert({
         where: { inngestEventId },
@@ -105,34 +104,26 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    const { sortedNodes, parallelLevels, workflowInfo } = await step.run("prepare-workflow", async () => {
-      const workflow = await prisma.workflow.findUniqueOrThrow({
-        where: { id: workflowId },
-        include: { nodes: true, connections: true },
-      });
-      const info = await prisma.workflow.findUniqueOrThrow({
-        where: { id: workflowId },
-        select: { userId: true, name: true },
-      });
+    // Single step: fetch workflow + user email together to minimize Inngest round-trips
+    const { sortedNodes, parallelLevels, workflowInfo, userEmail } = await step.run("prepare-workflow", async () => {
+      const [workflow, info] = await Promise.all([
+        prisma.workflow.findUniqueOrThrow({ where: { id: workflowId }, include: { nodes: true, connections: true } }),
+        prisma.workflow.findUniqueOrThrow({ where: { id: workflowId }, select: { userId: true, name: true } }),
+      ]);
+      const user = await prisma.user.findUnique({ where: { id: info.userId }, select: { email: true } });
       return {
         sortedNodes: topologicalSort(workflow.nodes, workflow.connections),
         parallelLevels: computeParallelLevels(workflow.nodes, workflow.connections),
         workflowInfo: info,
+        userEmail: user?.email ?? null,
       };
     });
 
     const userId = workflowInfo.userId;
 
-    // Send "started" email to user
-    const userEmail = await step.run("get-user-email", async () => {
-      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-      return user?.email ?? null;
-    });
-
+    // Fire "started" email without blocking - no step.run checkpoint needed
     if (userEmail) {
-      await step.run("notify-started", () =>
-        sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" }),
-      );
+      void sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" });
     }
 
     const aiNodeTypes: NodeType[] = [
@@ -141,23 +132,19 @@ export const executeWorkflow = inngest.createFunction(
     ];
     const hasAiAgents = sortedNodes.some((node) => aiNodeTypes.includes(node.type as NodeType));
 
-    const bandRoomId = hasAiAgents
-      ? await step.run("create-band-room", async () => {
-          const room = await createBandRoom(`${workflowInfo.name} - ${inngestEventId}`);
-          if (room) {
-            await prisma.execution.update({
-              where: { inngestEventId },
-              data: { bandRoomId: room.id },
-            });
-          }
-          return room?.id ?? null;
-        })
-      : null;
+    // Create Band room without a step.run checkpoint - fire DB update in background
+    let bandRoomId: string | null = null;
+    if (hasAiAgents) {
+      const room = await createBandRoom(`${workflowInfo.name} - ${inngestEventId}`);
+      if (room) {
+        bandRoomId = room.id;
+        void prisma.execution.update({ where: { inngestEventId }, data: { bandRoomId: room.id } });
+      }
+    }
 
     let context: Record<string, unknown> = event.data.initialData || {};
     const executionSteps: ExecutionStep[] = [];
 
-    // Execute nodes level by level — nodes in the same level run in parallel
     for (const level of parallelLevels) {
       const levelResults = await Promise.all(
         level.map(async (node) => {
@@ -173,60 +160,33 @@ export const executeWorkflow = inngest.createFunction(
               bandRoomId,
             });
             const varName = (node.data as Record<string, unknown>)?.variableName as string | undefined;
-            return {
-              ok: true as const,
-              node,
-              result,
-              varName,
-            };
+            return { ok: true as const, node, result, varName };
           } catch (err) {
-            return {
-              ok: false as const,
-              node,
-              error: err instanceof Error ? err.message : String(err),
-              err,
-            };
+            return { ok: false as const, node, error: err instanceof Error ? err.message : String(err), err };
           }
         }),
       );
 
-      // Merge all parallel outputs into context, then record steps
       for (const r of levelResults) {
         if (r.ok) {
-          // Merge variables from each parallel node into shared context
           if (r.varName && r.result[r.varName] !== undefined) {
             context = { ...context, [r.varName]: r.result[r.varName] };
           } else {
             context = { ...context, ...r.result };
           }
           executionSteps.push({
-            nodeId: r.node.id,
-            nodeType: r.node.type,
-            nodeName: r.node.name,
-            status: "success",
-            output: r.varName ? context[r.varName] : undefined,
+            nodeId: r.node.id, nodeType: r.node.type, nodeName: r.node.name,
+            status: "success", output: r.varName ? context[r.varName] : undefined,
             completedAt: new Date().toISOString(),
           });
         } else {
           executionSteps.push({
-            nodeId: r.node.id,
-            nodeType: r.node.type,
-            nodeName: r.node.name,
-            status: "error",
-            error: r.error,
-            completedAt: new Date().toISOString(),
+            nodeId: r.node.id, nodeType: r.node.type, nodeName: r.node.name,
+            status: "error", error: r.error, completedAt: new Date().toISOString(),
           });
           throw r.err;
         }
       }
-
-      // Save progress after each level completes
-      await step.run(`save-progress-level-${parallelLevels.indexOf(level)}`, async () => {
-        return prisma.execution.update({
-          where: { inngestEventId },
-          data: { output: JSON.parse(JSON.stringify({ _steps: executionSteps, ...context })) },
-        });
-      });
     }
 
     await step.run("complete-execution", async () => {
@@ -240,11 +200,9 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    // Send success email
+    // Fire success email without blocking
     if (userEmail) {
-      await step.run("notify-success", () =>
-        sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" }),
-      );
+      void sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" });
     }
 
     return { workflowId, result: context };

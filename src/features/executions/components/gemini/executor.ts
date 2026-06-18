@@ -1,4 +1,4 @@
-import { decode } from "html-entities";
+﻿import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { geminiChannel } from "@/inngest/channels/gemini";
@@ -20,13 +20,13 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({ data, nodeId, c
   const systemPrompt = data.systemPrompt ? decode(renderTemplate(data.systemPrompt, ctx)) : "You are a helpful assistant.";
   const userPrompt = decode(renderTemplate(data.userPrompt, ctx));
 
-  if (bandRoomId) await step.run("band-post-prompt", () => sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`));
+  if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Prompt:\n${userPrompt}`);
 
   try {
-    const text = await step.run("gemini-generate", () =>
+    const text = await step.run(`gemini-generate-${nodeId}`, () =>
       callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "google/gemma-4-26b-a4b-it:free"),
     );
-    if (bandRoomId) await step.run("band-post-response", () => sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`));
+    if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(geminiChannel().status({ nodeId, status: "success" }));
     return { ...context, [data.variableName]: { text } };
   } catch (error) {
@@ -34,3 +34,5 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({ data, nodeId, c
     throw error;
   }
 };
+
+

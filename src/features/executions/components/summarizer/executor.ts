@@ -1,11 +1,9 @@
-import Handlebars from "handlebars";
-import { decode } from "html-entities";
+﻿import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { cipherChannel } from "@/inngest/channels/cipher";
-import ky from "ky";
-
-Handlebars.registerHelper("json", (ctx) => new Handlebars.SafeString(JSON.stringify(ctx, null, 2)));
+import { renderTemplate } from "@/lib/template";
+import { callLLM } from "@/lib/llm";
 
 type SummarizerData = { variableName?: string; text?: string; style?: string; model?: string };
 
@@ -14,22 +12,17 @@ export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, n
   if (!data.variableName) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Variable name required"); }
   if (!data.text) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Text required"); }
 
-  const text = decode(Handlebars.compile(data.text)(context));
+  const text = decode(renderTemplate(data.text, context as Record<string, unknown>));
   const style = data.style || "concise";
   const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = `You are an expert summarizer. Summarize the following text in a ${style} manner. Return only the summary, no preamble.`;
 
   try {
-    const result = await step.run("summarizer-run", async () => {
-      const res = await ky.post("https://openrouter.ai/api/v1/chat/completions", {
-        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json", "HTTP-Referer": "https://cipher-app-tau.vercel.app", "X-Title": "Cipher" },
-        json: { model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }] },
-        timeout: 60000,
-      }).json<{ choices: { message: { content: string } }[] }>();
-      return { ...context, [data.variableName!]: { summary: res.choices[0]?.message?.content || "", originalLength: text.length } };
-    });
+    const summary = await step.run(`summarizer-run-${nodeId}`, () =>
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: text }], model),
+    );
     await publish(cipherChannel().status({ nodeId, status: "success" }));
-    return result;
+    return { ...context, [data.variableName!]: { summary, originalLength: text.length } };
   } catch (err) {
     await publish(cipherChannel().status({ nodeId, status: "error" }));
     throw err;

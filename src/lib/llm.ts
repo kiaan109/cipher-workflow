@@ -1,6 +1,7 @@
-/**
+﻿/**
  * Shared LLM call helper used by all AI executor nodes.
  * Tries models in order, each with a hard 25s timeout, falls through on failure.
+ * max_tokens capped at 800 to keep responses fast on free-tier models.
  */
 
 const FAST_MODELS = [
@@ -21,6 +22,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export async function callLLM(
   messages: { role: string; content: string }[],
   preferredModel?: string,
+  maxTokens = 800,
 ): Promise<string> {
   const models = preferredModel
     ? [preferredModel, ...FAST_MODELS.filter((m) => m !== preferredModel)]
@@ -38,7 +40,7 @@ export async function callLLM(
             "HTTP-Referer": "https://cipher-app-tau.vercel.app",
             "X-Title": "Cipher",
           },
-          body: JSON.stringify({ model, messages }),
+          body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
         }).then(async (r) => {
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           const json = await r.json() as { choices?: { message?: { content?: string } }[]; error?: { message: string } };
