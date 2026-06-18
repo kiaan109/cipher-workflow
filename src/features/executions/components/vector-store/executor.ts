@@ -13,6 +13,7 @@ export const vectorStoreExecutor: NodeExecutor<VectorStoreData> = async ({ data,
   await publish(cipherChannel().status({ nodeId, status: "loading" }));
   if (!data.variableName) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Vector Store: Variable name required"); }
   if (!data.indexHost) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Vector Store: Index host required"); }
+  if (!process.env.PINECONE_API_KEY) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Vector Store: PINECONE_API_KEY is not configured (add it in Vercel environment variables)"); }
 
   const operation = data.operation || "query";
   const indexHost = decode(Handlebars.compile(data.indexHost)(context));
