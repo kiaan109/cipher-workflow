@@ -150,9 +150,10 @@ export async function runWorkflow({
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[runWorkflow] execution ${executionId} failed:`, msg);
     await prisma.execution.update({
       where: { id: executionId },
       data: { status: ExecutionStatus.FAILED, error: msg, completedAt: new Date() },
-    }).catch(() => {});
+    }).catch((e) => console.error(`[runWorkflow] failed to update execution status:`, e));
   }
 }
