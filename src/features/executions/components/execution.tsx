@@ -120,6 +120,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
   const { data: execution, refetch } = useSuspenseExecution(executionId);
   const [showRawOutput, setShowRawOutput] = useState(false);
   const [showStack, setShowStack] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -131,6 +132,16 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
     }, 2000);
     return () => clearInterval(interval);
   }, [execution.status, executionId, queryClient, trpc]);
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      await fetch(`/api/executions/${executionId}/cancel`, { method: "POST" });
+      await queryClient.invalidateQueries(trpc.executions.getOne.queryOptions({ id: executionId }));
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const output = execution.output as Record<string, unknown> | null;
   const steps: NodeStep[] = (output?._steps as NodeStep[]) ?? [];
@@ -167,10 +178,22 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </div>
         </div>
         {execution.status === ExecutionStatus.RUNNING && (
-          <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200">
-            <Loader2Icon className="size-3 animate-spin" />
-            Live
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200">
+              <Loader2Icon className="size-3 animate-spin" />
+              Live
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 h-7 text-xs"
+              onClick={handleCancel}
+              disabled={cancelling}
+            >
+              {cancelling ? <Loader2Icon className="size-3 animate-spin mr-1" /> : null}
+              Cancel
+            </Button>
+          </div>
         )}
       </div>
 

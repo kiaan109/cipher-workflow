@@ -1,4 +1,4 @@
-﻿import { NonRetriableError } from "inngest";
+import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
 import { topologicalSort, computeParallelLevels } from "./utils";
@@ -43,7 +43,7 @@ type ExecutionStep = {
 export const executeWorkflow = inngest.createFunction(
   {
     id: "execute-workflow",
-    retries: process.env.NODE_ENV === "production" ? 3 : 0,
+    retries: 0,
     onFailure: async ({ event }) => {
       try {
         const execution = await prisma.execution.findFirst({ where: { inngestEventId: event.data.event.id }, include: { workflow: { select: { name: true, userId: true } } } });
@@ -219,3 +219,4 @@ export const executeWorkflow = inngest.createFunction(
     return { workflowId, result: context };
   },
 );
+
