@@ -4,10 +4,11 @@ import { createId } from "@paralleldrive/cuid2";
 
 export const maxDuration = 15;
 
-function getAppUrl() {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+function getRunnerUrl() {
+  if (process.env.WORKER_URL) return `${process.env.WORKER_URL}/api/run-workflow`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  return `${appUrl}/api/run-workflow`;
 }
 
 // POST /api/webhooks/trigger/[workflowId]
@@ -50,7 +51,7 @@ export async function POST(
     data: { workflowId, inngestEventId: eventId, status: ExecutionStatus.RUNNING },
   });
 
-  const runUrl = `${getAppUrl()}/api/run-workflow`;
+  const runUrl = getRunnerUrl();
   fetch(runUrl, {
     method: "POST",
     headers: {

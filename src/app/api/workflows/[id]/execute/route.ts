@@ -5,10 +5,13 @@ import { createId } from "@paralleldrive/cuid2";
 
 export const maxDuration = 15;
 
-function getAppUrl() {
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+function getRunnerUrl() {
+  // VPS worker takes priority — no timeout constraints
+  if (process.env.WORKER_URL) return `${process.env.WORKER_URL}/api/run-workflow`;
+  // Fallback: self-call via the dedicated /api/run-workflow route
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  return `${appUrl}/api/run-workflow`;
 }
 
 export async function POST(
@@ -35,7 +38,7 @@ export async function POST(
 
   // Fire-and-forget: invoke the dedicated run-workflow function as a separate
   // Vercel invocation so it gets its own timeout budget (up to maxDuration=300).
-  const runUrl = `${getAppUrl()}/api/run-workflow`;
+  const runUrl = getRunnerUrl();
   fetch(runUrl, {
     method: "POST",
     headers: {
