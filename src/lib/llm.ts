@@ -5,11 +5,22 @@
  */
 
 const FAST_MODELS = [
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "openai/gpt-oss-20b:free",
-  "meta-llama/llama-3.2-3b-instruct:free",
   "liquid/lfm-2.5-1.2b-instruct:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
+  "openai/gpt-oss-20b:free",
+  "nvidia/nemotron-3-nano-30b-a3b:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "nousresearch/hermes-3-llama-3.1-405b:free",
 ];
+
+// Unavailable/removed models — treated as instant fallback without API call
+const DEAD_MODELS = new Set([
+  "google/gemma-3-27b-it:free",
+  "google/gemma-2-9b-it:free",
+  "google/gemma-3-1b-it:free",
+  "google/gemma-3-12b-it:free",
+]);
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -31,6 +42,11 @@ export async function callLLM(
 
   let lastError: unknown;
   for (const model of models) {
+    if (DEAD_MODELS.has(model)) {
+      console.warn(`[llm] model ${model} skipped (known unavailable)`);
+      lastError = new Error(`Model ${model} is unavailable`);
+      continue;
+    }
     try {
       const result = await withTimeout(
         fetch("https://openrouter.ai/api/v1/chat/completions", {
