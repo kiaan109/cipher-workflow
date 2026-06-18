@@ -33,7 +33,7 @@ export const workflowsRouter = createTRPCRouter({
 
       // Fire-and-forget via direct runner (VPS or self-hosted /api/run-workflow)
       const runUrl = getRunnerUrl();
-      fetch(runUrl, {
+      await fetch(runUrl, {
         method: "POST",
         headers: {
           "content-type": "application/json",
