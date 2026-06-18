@@ -5,10 +5,10 @@
  */
 
 const FAST_MODELS = [
-  "google/gemma-2-9b-it:free",
-  "liquid/lfm-2.5-1.2b-instruct:free",
-  "google/gemma-3-1b-it:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "openai/gpt-oss-20b:free",
   "meta-llama/llama-3.2-3b-instruct:free",
+  "liquid/lfm-2.5-1.2b-instruct:free",
 ];
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
