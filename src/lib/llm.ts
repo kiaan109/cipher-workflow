@@ -5,9 +5,10 @@
  */
 
 const FAST_MODELS = [
-  "liquid/lfm-2.5-1.2b-instruct:free",   // ~2-5s tiny model
-  "openai/gpt-oss-20b:free",              // ~5-10s
-  "nex-agi/nex-n2-pro:free",             // fallback
+  "meta-llama/llama-3.1-8b-instruct:free",  // reliable 8B model
+  "mistralai/mistral-7b-instruct:free",      // good at structured output
+  "qwen/qwen-2.5-7b-instruct:free",          // strong reasoning
+  "openai/gpt-oss-20b:free",                 // fallback
 ];
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -49,7 +50,7 @@ export async function callLLM(
           if (!text) throw new Error("Empty response");
           return text;
         }),
-        8000, // 8s hard timeout per model
+        15000, // 15s hard timeout per model
       );
       return result;
     } catch (err) {
