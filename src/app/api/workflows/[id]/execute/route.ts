@@ -39,7 +39,7 @@ export async function POST(
   // Fire-and-forget: invoke the dedicated run-workflow function as a separate
   // Vercel invocation so it gets its own timeout budget (up to maxDuration=300).
   const runUrl = getRunnerUrl();
-  fetch(runUrl, {
+  await fetch(runUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
