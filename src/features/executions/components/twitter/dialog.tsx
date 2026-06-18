@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -16,7 +16,10 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
-  bearerToken: z.string().min(1, "Bearer token is required"),
+  apiKey: z.string().min(1, "API Key is required"),
+  apiKeySecret: z.string().min(1, "API Key Secret is required"),
+  accessToken: z.string().min(1, "Access Token is required"),
+  accessTokenSecret: z.string().min(1, "Access Token Secret is required"),
   text: z.string().min(1, "Tweet text is required").max(280, "Tweets cannot exceed 280 characters"),
 });
 
@@ -32,24 +35,24 @@ interface Props {
 export const TwitterDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<TwitterFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", bearerToken: "", text: "", ...defaultValues },
+    defaultValues: { variableName: "", apiKey: "", apiKeySecret: "", accessToken: "", accessTokenSecret: "", text: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", bearerToken: "", text: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", apiKey: "", apiKeySecret: "", accessToken: "", accessTokenSecret: "", text: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myTwitter";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Twitter / X Configuration</DialogTitle>
-          <DialogDescription>Post a tweet via the Twitter v2 API.</DialogDescription>
+          <DialogTitle>Twitter / X</DialogTitle>
+          <DialogDescription>Post a tweet using your OAuth 1.0a credentials from the Twitter Developer Portal.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
+          <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>
@@ -58,11 +61,31 @@ export const TwitterDialog = ({ open, onOpenChange, onSubmit, defaultValues = {}
                 <FormMessage />
               </FormItem>
             )} />
-            <FormField control={form.control} name="bearerToken" render={({ field }) => (
+            <FormField control={form.control} name="apiKey" render={({ field }) => (
               <FormItem>
-                <FormLabel>Bearer Token</FormLabel>
-                <FormControl><Input type="password" placeholder="AAAAAA..." {...field} /></FormControl>
-                <FormDescription>From the Twitter Developer Portal</FormDescription>
+                <FormLabel>API Key (Consumer Key)</FormLabel>
+                <FormControl><Input type="password" placeholder="From Twitter Developer Portal → App Keys" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="apiKeySecret" render={({ field }) => (
+              <FormItem>
+                <FormLabel>API Key Secret (Consumer Secret)</FormLabel>
+                <FormControl><Input type="password" placeholder="From Twitter Developer Portal → App Keys" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Access Token</FormLabel>
+                <FormControl><Input type="password" placeholder="From Twitter Developer Portal → Authentication Tokens" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="accessTokenSecret" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Access Token Secret</FormLabel>
+                <FormControl><Input type="password" placeholder="From Twitter Developer Portal → Authentication Tokens" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

@@ -11,6 +11,8 @@ Handlebars.registerHelper("json", (context) => {
 
 type WhatsAppData = {
   variableName?: string;
+  accessToken?: string;
+  phoneNumberId?: string;
   to?: string;
   message?: string;
 };
@@ -24,12 +26,12 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
 }) => {
   await publish(whatsappChannel().status({ nodeId, status: "loading" }));
 
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const accessToken = data.accessToken || process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = data.phoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!accessToken || !phoneNumberId) {
     await publish(whatsappChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("WhatsApp node: Platform credentials not configured (WHATSAPP_ACCESS_TOKEN / WHATSAPP_PHONE_NUMBER_ID)");
+    throw new NonRetriableError("WhatsApp node: Access Token and Phone Number ID are required (from Meta Business → WhatsApp Cloud API)");
   }
   if (!data.to) {
     await publish(whatsappChannel().status({ nodeId, status: "error" }));
@@ -51,15 +53,14 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
       const response = await ky.post(
         `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
           json: {
             messaging_product: "whatsapp",
             to: data.to,
             type: "text",
             text: { body: message },
           },
+          timeout: 30000,
         },
       ).json<{ messages: Array<{ id: string }> }>();
 

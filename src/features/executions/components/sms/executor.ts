@@ -11,6 +11,9 @@ Handlebars.registerHelper("json", (context) => {
 
 type SmsData = {
   variableName?: string;
+  accountSid?: string;
+  authToken?: string;
+  from?: string;
   to?: string;
   body?: string;
 };
@@ -24,13 +27,13 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 }) => {
   await publish(smsChannel().status({ nodeId, status: "loading" }));
 
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_FROM_NUMBER;
+  const accountSid = data.accountSid || process.env.TWILIO_ACCOUNT_SID;
+  const authToken = data.authToken || process.env.TWILIO_AUTH_TOKEN;
+  const from = data.from || process.env.TWILIO_FROM_NUMBER;
 
   if (!accountSid || !authToken || !from) {
     await publish(smsChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("SMS node: Platform Twilio credentials not configured (TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER)");
+    throw new NonRetriableError("SMS node: Twilio Account SID, Auth Token, and From Number are required (from twilio.com/console)");
   }
   if (!data.to) {
     await publish(smsChannel().status({ nodeId, status: "error" }));
@@ -60,6 +63,7 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
             "Content-Type": "application/x-www-form-urlencoded",
           },
           body: params.toString(),
+          timeout: 30000,
         },
       ).json<{ sid: string; status: string }>();
 

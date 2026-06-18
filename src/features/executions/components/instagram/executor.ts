@@ -11,6 +11,8 @@ Handlebars.registerHelper("json", (context) => {
 
 type InstagramData = {
   variableName?: string;
+  accessToken?: string;
+  userId?: string;
   imageUrl?: string;
   caption?: string;
 };
@@ -24,12 +26,12 @@ export const instagramExecutor: NodeExecutor<InstagramData> = async ({
 }) => {
   await publish(instagramChannel().status({ nodeId, status: "loading" }));
 
-  const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
-  const userId = process.env.INSTAGRAM_USER_ID;
+  const accessToken = data.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+  const userId = data.userId || process.env.INSTAGRAM_USER_ID;
 
   if (!accessToken || !userId) {
     await publish(instagramChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Instagram node: Platform credentials not configured (INSTAGRAM_ACCESS_TOKEN / INSTAGRAM_USER_ID)");
+    throw new NonRetriableError("Instagram node: Access Token and Instagram User ID are required (from Meta Business → Instagram Graph API)");
   }
   if (!data.imageUrl) {
     await publish(instagramChannel().status({ nodeId, status: "error" }));
@@ -40,9 +42,7 @@ export const instagramExecutor: NodeExecutor<InstagramData> = async ({
     throw new NonRetriableError("Instagram node: Variable name is required");
   }
 
-  const caption = data.caption
-    ? decode(Handlebars.compile(data.caption)(context))
-    : "";
+  const caption = data.caption ? decode(Handlebars.compile(data.caption)(context)) : "";
   const imageUrl = decode(Handlebars.compile(data.imageUrl)(context));
 
   try {
@@ -50,30 +50,22 @@ export const instagramExecutor: NodeExecutor<InstagramData> = async ({
       const mediaRes = await ky.post(
         `https://graph.facebook.com/v21.0/${userId}/media`,
         {
-          json: {
-            image_url: imageUrl,
-            caption,
-            access_token: accessToken,
-          },
+          json: { image_url: imageUrl, caption, access_token: accessToken },
+          timeout: 30000,
         },
       ).json<{ id: string }>();
 
       const publishRes = await ky.post(
         `https://graph.facebook.com/v21.0/${userId}/media_publish`,
         {
-          json: {
-            creation_id: mediaRes.id,
-            access_token: accessToken,
-          },
+          json: { creation_id: mediaRes.id, access_token: accessToken },
+          timeout: 30000,
         },
       ).json<{ id: string }>();
 
       return {
         ...context,
-        [data.variableName!]: {
-          mediaId: publishRes.id,
-          caption,
-        },
+        [data.variableName!]: { mediaId: publishRes.id, caption },
       };
     });
 

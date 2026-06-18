@@ -3,7 +3,7 @@ import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { twitterChannel } from "@/inngest/channels/twitter";
-import ky from "ky";
+import crypto from "crypto";
 
 Handlebars.registerHelper("json", (context) => {
   return new Handlebars.SafeString(JSON.stringify(context, null, 2));
@@ -11,9 +11,57 @@ Handlebars.registerHelper("json", (context) => {
 
 type TwitterData = {
   variableName?: string;
-  bearerToken?: string;
+  apiKey?: string;
+  apiKeySecret?: string;
+  accessToken?: string;
+  accessTokenSecret?: string;
   text?: string;
 };
+
+function buildOAuth1Header(
+  method: string,
+  url: string,
+  apiKey: string,
+  apiKeySecret: string,
+  accessToken: string,
+  accessTokenSecret: string,
+): string {
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+
+  const params: Record<string, string> = {
+    oauth_consumer_key: apiKey,
+    oauth_nonce: nonce,
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: timestamp,
+    oauth_token: accessToken,
+    oauth_version: "1.0",
+  };
+
+  const paramStr = Object.keys(params)
+    .sort()
+    .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`)
+    .join("&");
+
+  const sigBase = [
+    method.toUpperCase(),
+    encodeURIComponent(url),
+    encodeURIComponent(paramStr),
+  ].join("&");
+
+  const signingKey = `${encodeURIComponent(apiKeySecret)}&${encodeURIComponent(accessTokenSecret)}`;
+  const signature = crypto.createHmac("sha1", signingKey).update(sigBase).digest("base64");
+
+  params.oauth_signature = signature;
+
+  const headerVal = Object.keys(params)
+    .filter((k) => k.startsWith("oauth_"))
+    .sort()
+    .map((k) => `${encodeURIComponent(k)}="${encodeURIComponent(params[k])}"`)
+    .join(", ");
+
+  return `OAuth ${headerVal}`;
+}
 
 export const twitterExecutor: NodeExecutor<TwitterData> = async ({
   data,
@@ -24,9 +72,9 @@ export const twitterExecutor: NodeExecutor<TwitterData> = async ({
 }) => {
   await publish(twitterChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.bearerToken) {
+  if (!data.apiKey || !data.apiKeySecret || !data.accessToken || !data.accessTokenSecret) {
     await publish(twitterChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Twitter node: Bearer token is required");
+    throw new NonRetriableError("Twitter node: All four OAuth 1.0a credentials are required (API Key, API Key Secret, Access Token, Access Token Secret)");
   }
   if (!data.text) {
     await publish(twitterChannel().status({ nodeId, status: "error" }));
@@ -38,17 +86,34 @@ export const twitterExecutor: NodeExecutor<TwitterData> = async ({
   }
 
   const text = decode(Handlebars.compile(data.text)(context)).slice(0, 280);
+  const tweetUrl = "https://api.twitter.com/2/tweets";
 
   try {
     const result = await step.run("twitter-post-tweet", async () => {
-      const response = await ky.post("https://api.twitter.com/2/tweets", {
+      const authHeader = buildOAuth1Header(
+        "POST",
+        tweetUrl,
+        data.apiKey!,
+        data.apiKeySecret!,
+        data.accessToken!,
+        data.accessTokenSecret!,
+      );
+
+      const res = await fetch(tweetUrl, {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${data.bearerToken}`,
+          Authorization: authHeader,
           "Content-Type": "application/json",
         },
-        json: { text },
-      }).json<{ data: { id: string; text: string } }>();
+        body: JSON.stringify({ text }),
+      });
 
+      if (!res.ok) {
+        const err = await res.text();
+        throw new NonRetriableError(`Twitter API error ${res.status}: ${err}`);
+      }
+
+      const response = await res.json() as { data: { id: string; text: string } };
       return {
         ...context,
         [data.variableName!]: {

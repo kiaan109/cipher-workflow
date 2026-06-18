@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
+  accessToken: z.string().min(1, "Access Token is required"),
+  phoneNumberId: z.string().min(1, "Phone Number ID is required"),
   to: z.string().min(1, "Recipient phone number is required"),
   message: z.string().min(1, "Message is required"),
 });
@@ -32,24 +34,24 @@ interface Props {
 export const WhatsappDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<WhatsappFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", to: "", message: "", ...defaultValues },
+    defaultValues: { variableName: "", accessToken: "", phoneNumberId: "", to: "", message: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", to: "", message: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", accessToken: "", phoneNumberId: "", to: "", message: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myWhatsapp";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>WhatsApp</DialogTitle>
-          <DialogDescription>Send a WhatsApp message via the platform account.</DialogDescription>
+          <DialogDescription>Send a WhatsApp message via your Meta Business WhatsApp Cloud API account.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
+          <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>
@@ -58,11 +60,25 @@ export const WhatsappDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
                 <FormMessage />
               </FormItem>
             )} />
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Access Token</FormLabel>
+                <FormControl><Input type="password" placeholder="From Meta Business → WhatsApp → API Setup" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="phoneNumberId" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number ID</FormLabel>
+                <FormControl><Input placeholder="1234567890 — from Meta WhatsApp API Setup" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
             <FormField control={form.control} name="to" render={({ field }) => (
               <FormItem>
                 <FormLabel>Recipient Phone</FormLabel>
                 <FormControl><Input placeholder="+1234567890" {...field} /></FormControl>
-                <FormDescription>Include country code (e.g. +1 for US)</FormDescription>
+                <FormDescription>Include country code. Must be registered on WhatsApp.</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
