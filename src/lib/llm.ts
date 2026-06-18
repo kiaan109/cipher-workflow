@@ -5,10 +5,10 @@
  */
 
 const FAST_MODELS = [
-  "meta-llama/llama-3.1-8b-instruct:free",  // reliable 8B model
-  "mistralai/mistral-7b-instruct:free",      // good at structured output
-  "qwen/qwen-2.5-7b-instruct:free",          // strong reasoning
-  "openai/gpt-oss-20b:free",                 // fallback
+  "google/gemma-2-9b-it:free",
+  "liquid/lfm-2.5-1.2b-instruct:free",
+  "google/gemma-3-1b-it:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
 ];
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
