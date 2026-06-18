@@ -104,7 +104,7 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    // Single step: fetch workflow + user email together to minimize Inngest round-trips
+    // Fetch workflow + user email in one step
     const { sortedNodes, parallelLevels, workflowInfo, userEmail } = await step.run("prepare-workflow", async () => {
       const [workflow, info] = await Promise.all([
         prisma.workflow.findUniqueOrThrow({ where: { id: workflowId }, include: { nodes: true, connections: true } }),
@@ -121,25 +121,32 @@ export const executeWorkflow = inngest.createFunction(
 
     const userId = workflowInfo.userId;
 
-    // Fire "started" email without blocking - no step.run checkpoint needed
-    if (userEmail) {
-      await sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" });
-    }
-
+    // Create Band room inside step.run so it only runs once (not on every Inngest replay)
     const aiNodeTypes: NodeType[] = [
       NodeType.OPENAI, NodeType.ANTHROPIC, NodeType.GEMINI, NodeType.MISTRAL, NodeType.QWEN,
       NodeType.AI_AGENT, NodeType.AI_CHAIN, NodeType.SUMMARIZER, NodeType.TEXT_CLASSIFIER, NodeType.INFO_EXTRACTOR,
     ];
     const hasAiAgents = sortedNodes.some((node) => aiNodeTypes.includes(node.type as NodeType));
 
-    // Create Band room without a step.run checkpoint - fire DB update in background
-    let bandRoomId: string | null = null;
-    if (hasAiAgents) {
-      const room = await createBandRoom(`${workflowInfo.name} - ${inngestEventId}`);
-      if (room) {
-        bandRoomId = room.id;
-        void prisma.execution.update({ where: { inngestEventId }, data: { bandRoomId: room.id } });
-      }
+    const bandRoomId = hasAiAgents
+      ? await step.run("create-band-room", async () => {
+          try {
+            const room = await Promise.race([
+              createBandRoom(`${workflowInfo.name} - ${inngestEventId}`),
+              new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+            if (room) {
+              void prisma.execution.update({ where: { inngestEventId }, data: { bandRoomId: room.id } });
+              return room.id;
+            }
+          } catch { /* Band API failure is non-fatal */ }
+          return null;
+        })
+      : null;
+
+    // Fire started email (awaited so it completes before nodes run)
+    if (userEmail) {
+      await sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" });
     }
 
     let context: Record<string, unknown> = event.data.initialData || {};
@@ -187,6 +194,10 @@ export const executeWorkflow = inngest.createFunction(
           throw r.err;
         }
       }
+
+      // Save progress after each level so the live page shows nodes completing
+      const snapshot = JSON.parse(JSON.stringify({ _steps: executionSteps, ...context }));
+      void prisma.execution.update({ where: { inngestEventId }, data: { output: snapshot } });
     }
 
     await step.run("complete-execution", async () => {
@@ -200,7 +211,7 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    // Fire success email without blocking
+    // Fire success email
     if (userEmail) {
       await sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" });
     }
@@ -208,4 +219,3 @@ export const executeWorkflow = inngest.createFunction(
     return { workflowId, result: context };
   },
 );
-
