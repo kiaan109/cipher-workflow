@@ -25,13 +25,16 @@ export const linkedinExecutor: NodeExecutor<LinkedInData> = async ({
 }) => {
   await publish(linkedinChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.accessToken) {
+  const accessToken = data.accessToken || process.env.LINKEDIN_ACCESS_TOKEN;
+  const personUrn = data.personUrn || process.env.LINKEDIN_PERSON_URN;
+
+  if (!accessToken) {
     await publish(linkedinChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("LinkedIn node: Access token is required");
+    throw new NonRetriableError("LinkedIn node: Set LINKEDIN_ACCESS_TOKEN in environment variables");
   }
-  if (!data.personUrn) {
+  if (!personUrn) {
     await publish(linkedinChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("LinkedIn node: Person URN is required (e.g. urn:li:person:ABC123)");
+    throw new NonRetriableError("LinkedIn node: Set LINKEDIN_PERSON_URN in environment variables (e.g. urn:li:person:ABC123)");
   }
   if (!data.text) {
     await publish(linkedinChannel().status({ nodeId, status: "error" }));
@@ -48,12 +51,12 @@ export const linkedinExecutor: NodeExecutor<LinkedInData> = async ({
     const result = await step.run("linkedin-post-update", async () => {
       const response = await ky.post("https://api.linkedin.com/v2/ugcPosts", {
         headers: {
-          Authorization: `Bearer ${data.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           "X-Restli-Protocol-Version": "2.0.0",
         },
         json: {
-          author: data.personUrn,
+          author: personUrn,
           lifecycleState: "PUBLISHED",
           specificContent: {
             "com.linkedin.ugc.ShareContent": {

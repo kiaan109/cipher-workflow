@@ -16,9 +16,6 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
-  accountSid: z.string().min(1, "Account SID is required"),
-  authToken: z.string().min(1, "Auth Token is required"),
-  from: z.string().min(1, "From number is required"),
   to: z.string().min(1, "Recipient phone is required"),
   body: z.string().min(1, "Message body is required"),
 });
@@ -35,11 +32,11 @@ interface Props {
 export const SmsDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<SmsFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", accountSid: "", authToken: "", from: "", to: "", body: "", ...defaultValues },
+    defaultValues: { variableName: "", to: "", body: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", accountSid: "", authToken: "", from: "", to: "", body: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", to: "", body: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "mySms";
@@ -49,12 +46,8 @@ export const SmsDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: 
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>SMS</DialogTitle>
-          <DialogDescription>Send an SMS via your Twilio account (twilio.com/console).</DialogDescription>
+          <DialogDescription>Send an SMS message. Platform credentials are pre-configured.</DialogDescription>
         </DialogHeader>
-        <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
-          <span className="text-muted-foreground">Need credentials?</span>
-          <span className="font-medium text-primary">console.twilio.com ↗</span>
-        </a>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (
@@ -62,28 +55,6 @@ export const SmsDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: 
                 <FormLabel>Variable Name</FormLabel>
                 <FormControl><Input placeholder="mySms" {...field} /></FormControl>
                 <FormDescription>Reference as {`{{${watchVar}.messageSid}}`}</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="accountSid" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Account SID</FormLabel>
-                <FormControl><Input placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" {...field} /></FormControl>
-                <FormDescription>From twilio.com/console</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="authToken" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Auth Token</FormLabel>
-                <FormControl><Input type="password" placeholder="From twilio.com/console" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="from" render={({ field }) => (
-              <FormItem>
-                <FormLabel>From Number</FormLabel>
-                <FormControl><Input placeholder="+1234567890 — your Twilio number" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -16,8 +16,6 @@ import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
-  accessToken: z.string().min(1, "Access token is required"),
-  personUrn: z.string().min(1, "Person URN is required"),
   text: z.string().min(1, "Post text is required"),
 });
 
@@ -33,11 +31,11 @@ interface Props {
 export const LinkedinDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<LinkedinFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", accessToken: "", personUrn: "", text: "", ...defaultValues },
+    defaultValues: { variableName: "", text: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", accessToken: "", personUrn: "", text: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", text: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myLinkedin";
@@ -46,13 +44,9 @@ export const LinkedinDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>LinkedIn Configuration</DialogTitle>
-          <DialogDescription>Post an update to LinkedIn via the UGC Posts API.</DialogDescription>
+          <DialogTitle>LinkedIn</DialogTitle>
+          <DialogDescription>Post an update to LinkedIn. Platform credentials are pre-configured.</DialogDescription>
         </DialogHeader>
-        <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
-          <span className="text-muted-foreground">Need credentials?</span>
-          <span className="font-medium text-primary">linkedin.com/developers ↗</span>
-        </a>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (
@@ -60,22 +54,6 @@ export const LinkedinDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
                 <FormLabel>Variable Name</FormLabel>
                 <FormControl><Input placeholder="myLinkedin" {...field} /></FormControl>
                 <FormDescription>Reference as {`{{${watchVar}.postId}}`}</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="accessToken" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Access Token</FormLabel>
-                <FormControl><Input type="password" placeholder="AQV..." {...field} /></FormControl>
-                <FormDescription>OAuth 2.0 access token from LinkedIn Developer Portal</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="personUrn" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Person URN</FormLabel>
-                <FormControl><Input placeholder="urn:li:person:XXXXXXXXXX" {...field} /></FormControl>
-                <FormDescription>Your LinkedIn person URN (from /v2/me)</FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
