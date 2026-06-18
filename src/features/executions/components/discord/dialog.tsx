@@ -93,6 +93,10 @@ export const DiscordDialog = ({
             Configure the Discord webhook settings for this node.
           </DialogDescription>
         </DialogHeader>
+        <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
+          <span className="text-muted-foreground">Need credentials?</span>
+          <span className="font-medium text-primary">discord.com/developers ↗</span>
+        </a>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}

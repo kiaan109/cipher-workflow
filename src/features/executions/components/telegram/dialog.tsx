@@ -49,6 +49,10 @@ export const TelegramDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
           <DialogTitle>Telegram Configuration</DialogTitle>
           <DialogDescription>Send a message via your Telegram bot.</DialogDescription>
         </DialogHeader>
+        <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
+          <span className="text-muted-foreground">Need credentials?</span>
+          <span className="font-medium text-primary">t.me/BotFather ↗</span>
+        </a>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (

@@ -12,7 +12,7 @@ type EmailNodeData = Record<string, string | number | undefined>;
 type EmailNodeType = Node<EmailNodeData>;
 
 export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

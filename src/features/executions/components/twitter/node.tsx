@@ -12,7 +12,7 @@ type TwitterNodeData = Record<string, string | undefined>;
 type TwitterNodeType = Node<TwitterNodeData>;
 
 export const TwitterNode = memo((props: NodeProps<TwitterNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

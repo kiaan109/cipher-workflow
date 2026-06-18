@@ -12,7 +12,7 @@ type SmsNodeData = Record<string, string | number | undefined>;
 type SmsNodeType = Node<SmsNodeData>;
 
 export const SmsNode = memo((props: NodeProps<SmsNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

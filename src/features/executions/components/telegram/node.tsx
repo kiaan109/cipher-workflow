@@ -12,7 +12,7 @@ type TelegramNodeData = Record<string, string | undefined>;
 type TelegramNodeType = Node<TelegramNodeData>;
 
 export const TelegramNode = memo((props: NodeProps<TelegramNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

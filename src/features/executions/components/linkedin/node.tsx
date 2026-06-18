@@ -12,7 +12,7 @@ type LinkedInNodeData = Record<string, string | undefined>;
 type LinkedInNodeType = Node<LinkedInNodeData>;
 
 export const LinkedInNode = memo((props: NodeProps<LinkedInNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

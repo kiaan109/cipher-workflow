@@ -89,6 +89,10 @@ export const SlackDialog = ({
             Configure the Slack webhook settings for this node.
           </DialogDescription>
         </DialogHeader>
+        <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
+          <span className="text-muted-foreground">Need credentials?</span>
+          <span className="font-medium text-primary">api.slack.com/apps ↗</span>
+        </a>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}

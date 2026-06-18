@@ -12,7 +12,7 @@ type WhatsAppNodeData = Record<string, string | undefined>;
 type WhatsAppNodeType = Node<WhatsAppNodeData>;
 
 export const WhatsAppNode = memo((props: NodeProps<WhatsAppNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

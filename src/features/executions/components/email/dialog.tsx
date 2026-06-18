@@ -49,6 +49,10 @@ export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }
           <DialogTitle>Email</DialogTitle>
           <DialogDescription>Send an email via the platform mail account.</DialogDescription>
         </DialogHeader>
+        <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
+          <span className="text-muted-foreground">Need credentials?</span>
+          <span className="font-medium text-primary">resend.com/api-keys ↗</span>
+        </a>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
             <FormField control={form.control} name="variableName" render={({ field }) => (

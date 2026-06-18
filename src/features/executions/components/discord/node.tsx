@@ -16,7 +16,7 @@ type DiscordNodeData = {
 type DiscordNodeType = Node<DiscordNodeData>;
 
 export const DiscordNode = memo((props: NodeProps<DiscordNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

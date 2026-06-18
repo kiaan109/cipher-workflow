@@ -17,7 +17,7 @@ type SlackNodeData = {
 type SlackNodeType = Node<SlackNodeData>;
 
 export const SlackNode = memo((props: NodeProps<SlackNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({

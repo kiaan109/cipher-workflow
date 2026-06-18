@@ -12,7 +12,7 @@ type InstagramNodeData = Record<string, string | undefined>;
 type InstagramNodeType = Node<InstagramNodeData>;
 
 export const InstagramNode = memo((props: NodeProps<InstagramNodeType>) => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({
