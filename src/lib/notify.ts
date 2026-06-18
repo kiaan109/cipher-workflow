@@ -1,6 +1,5 @@
 /**
  * Sends workflow notification emails via Resend.
- * Used by both the execute route and Inngest function.
  */
 
 const RESEND_API = "https://api.resend.com/emails";
@@ -21,37 +20,40 @@ export async function sendWorkflowEmail({
   appUrl?: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) { console.warn("[notify] RESEND_API_KEY not set, skipping email"); return; }
+
   const from = process.env.RESEND_FROM_EMAIL || "noreply@arabyshanaya.com";
   const base = appUrl || process.env.NEXT_PUBLIC_APP_URL || "https://cipher-app-tau.vercel.app";
   const link = `${base}/executions/${executionId}`;
 
   const subjects: Record<typeof status, string> = {
-    started: `⚡ Workflow "${workflowName}" is running`,
-    success: `✅ Workflow "${workflowName}" completed successfully`,
-    failed: `❌ Workflow "${workflowName}" failed`,
+    started: `Workflow "${workflowName}" is running`,
+    success: `Workflow "${workflowName}" completed successfully`,
+    failed: `Workflow "${workflowName}" failed`,
   };
 
   const bodies: Record<typeof status, string> = {
-    started: `Hi,\n\nYour Cipher workflow "${workflowName}" has started running.\n\nYou can safely close the tab — we'll email you as soon as it finishes.\n\nWatch it live:\n${link}\n\n— Cipher`,
-    success: `Hi,\n\nGreat news! Your Cipher workflow "${workflowName}" completed successfully.\n\nView the full results here:\n${link}\n\n— Cipher`,
-    failed: `Hi,\n\nYour Cipher workflow "${workflowName}" encountered an error and stopped.\n\n${error ? `Error: ${error}\n\n` : ""}View the execution details:\n${link}\n\n— Cipher`,
+    started: `Hi,\n\nYour Cipher workflow "${workflowName}" has started running.\n\nYou can safely close the tab - we'll email you as soon as it finishes.\n\nWatch it live:\n${link}\n\n- Cipher`,
+    success: `Hi,\n\nGreat news! Your Cipher workflow "${workflowName}" completed successfully.\n\nView the full results here:\n${link}\n\n- Cipher`,
+    failed: `Hi,\n\nYour Cipher workflow "${workflowName}" encountered an error and stopped.\n\n${error ? `Error: ${error}\n\n` : ""}View the execution details:\n${link}\n\n- Cipher`,
   };
 
   try {
-    await fetch(RESEND_API, {
+    const res = await fetch(RESEND_API, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject: subjects[status],
-        text: bodies[status],
-      }),
+      body: JSON.stringify({ from, to: [to], subject: subjects[status], text: bodies[status] }),
     });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error(`[notify] Resend API error ${res.status}: ${body}`);
+    } else {
+      console.log(`[notify] Sent ${status} email to ${to}`);
+    }
   } catch (e) {
-    console.warn("[notify] Failed to send workflow email:", e);
+    console.error("[notify] Failed to send workflow email:", e instanceof Error ? e.message : e);
   }
 }

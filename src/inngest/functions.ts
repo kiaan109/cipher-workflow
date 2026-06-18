@@ -123,7 +123,7 @@ export const executeWorkflow = inngest.createFunction(
 
     // Fire "started" email without blocking - no step.run checkpoint needed
     if (userEmail) {
-      void sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" });
+      await sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" });
     }
 
     const aiNodeTypes: NodeType[] = [
@@ -202,9 +202,10 @@ export const executeWorkflow = inngest.createFunction(
 
     // Fire success email without blocking
     if (userEmail) {
-      void sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" });
+      await sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" });
     }
 
     return { workflowId, result: context };
   },
 );
+
