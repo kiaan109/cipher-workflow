@@ -5,8 +5,14 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import z from "zod";
 import { PAGINATION } from "@/config/constants";
 import { NodeType, ExecutionStatus } from "@/generated/prisma";
-import { sendWorkflowExecution } from "@/inngest/utils";
 import { createId } from "@paralleldrive/cuid2";
+
+function getRunnerUrl() {
+  if (process.env.WORKER_URL) return `${process.env.WORKER_URL}/api/run-workflow`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  return `${appUrl}/api/run-workflow`;
+}
 
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
@@ -16,20 +22,25 @@ export const workflowsRouter = createTRPCRouter({
         where: { id: input.id, userId: ctx.auth.user.id },
       });
 
-      // Generate the event ID upfront so we can create the execution record now
-      const eventId = createId();
-
-      // Create execution in DB immediately so it shows in the executions tab
+      const executionId = createId();
       const execution = await prisma.execution.create({
         data: {
           workflowId: input.id,
-          inngestEventId: eventId,
+          inngestEventId: executionId,
           status: ExecutionStatus.RUNNING,
         },
       });
 
-      // Fire the Inngest event with the same ID
-      await sendWorkflowExecution({ workflowId: input.id, eventId });
+      // Fire-and-forget via direct runner (VPS or self-hosted /api/run-workflow)
+      const runUrl = getRunnerUrl();
+      fetch(runUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
+        },
+        body: JSON.stringify({ workflowId: input.id, executionId: execution.id }),
+      }).catch(() => {});
 
       return { ...workflow, executionId: execution.id };
     }),
