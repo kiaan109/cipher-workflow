@@ -72,9 +72,14 @@ export const twitterExecutor: NodeExecutor<TwitterData> = async ({
 }) => {
   await publish(twitterChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.apiKey || !data.apiKeySecret || !data.accessToken || !data.accessTokenSecret) {
+  const apiKey = data.apiKey || process.env.TWITTER_API_KEY;
+  const apiKeySecret = data.apiKeySecret || process.env.TWITTER_API_KEY_SECRET;
+  const accessToken = data.accessToken || process.env.TWITTER_ACCESS_TOKEN;
+  const accessTokenSecret = data.accessTokenSecret || process.env.TWITTER_ACCESS_TOKEN_SECRET;
+
+  if (!apiKey || !apiKeySecret || !accessToken || !accessTokenSecret) {
     await publish(twitterChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Twitter node: All four OAuth 1.0a credentials are required (API Key, API Key Secret, Access Token, Access Token Secret)");
+    throw new NonRetriableError("Twitter node: Set TWITTER_API_KEY, TWITTER_API_KEY_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET in environment variables");
   }
   if (!data.text) {
     await publish(twitterChannel().status({ nodeId, status: "error" }));
@@ -93,10 +98,10 @@ export const twitterExecutor: NodeExecutor<TwitterData> = async ({
       const authHeader = buildOAuth1Header(
         "POST",
         tweetUrl,
-        data.apiKey!,
-        data.apiKeySecret!,
-        data.accessToken!,
-        data.accessTokenSecret!,
+        apiKey,
+        apiKeySecret,
+        accessToken,
+        accessTokenSecret,
       );
 
       const res = await fetch(tweetUrl, {

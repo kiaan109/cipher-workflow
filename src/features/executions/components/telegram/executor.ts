@@ -25,9 +25,10 @@ export const telegramExecutor: NodeExecutor<TelegramData> = async ({
 }) => {
   await publish(telegramChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.botToken) {
+  const botToken = data.botToken || process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
     await publish(telegramChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Telegram node: Bot token is required");
+    throw new NonRetriableError("Telegram node: Bot token is required — set TELEGRAM_BOT_TOKEN in environment variables");
   }
   if (!data.chatId) {
     await publish(telegramChannel().status({ nodeId, status: "error" }));
@@ -47,7 +48,7 @@ export const telegramExecutor: NodeExecutor<TelegramData> = async ({
   try {
     const result = await step.run("telegram-send-message", async () => {
       const response = await ky.post(
-        `https://api.telegram.org/bot${data.botToken}/sendMessage`,
+        `https://api.telegram.org/bot${botToken}/sendMessage`,
         { json: { chat_id: data.chatId, text, parse_mode: "HTML" } }
       ).json<{ result: { message_id: number } }>();
 

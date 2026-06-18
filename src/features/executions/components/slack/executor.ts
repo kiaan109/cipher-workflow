@@ -47,17 +47,13 @@ export const slackExecutor: NodeExecutor<SlackData> = async ({
 
   try {
     const result = await step.run("slack-webhook", async () => {
-      if (!data.webhookUrl) {
-        await publish(
-          slackChannel().status({
-            nodeId,
-            status: "error",
-          }),
-        );
-        throw new NonRetriableError("Slack node: Webhook URL is required");
+      const webhookUrl = data.webhookUrl || process.env.SLACK_WEBHOOK_URL;
+      if (!webhookUrl) {
+        await publish(slackChannel().status({ nodeId, status: "error" }));
+        throw new NonRetriableError("Slack node: Add a Webhook URL in the node, or set SLACK_WEBHOOK_URL in environment variables");
       }
 
-      await ky.post(data.webhookUrl, {
+      await ky.post(webhookUrl, {
         json: { text: content },
       });
 

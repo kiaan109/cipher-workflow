@@ -51,17 +51,13 @@ export const discordExecutor: NodeExecutor<DiscordData> = async ({
 
   try {
     const result = await step.run("discord-webhook", async () => {
-      if (!data.webhookUrl) {
-        await publish(
-          discordChannel().status({
-            nodeId,
-            status: "error",
-          }),
-        );
-        throw new NonRetriableError("Discord node: Webhook URL is required");
+      const webhookUrl = data.webhookUrl || process.env.DISCORD_WEBHOOK_URL;
+      if (!webhookUrl) {
+        await publish(discordChannel().status({ nodeId, status: "error" }));
+        throw new NonRetriableError("Discord node: Add a Webhook URL in the node, or set DISCORD_WEBHOOK_URL in environment variables");
       }
 
-      await ky.post(data.webhookUrl, {
+      await ky.post(webhookUrl, {
         json: {
           content: content.slice(0, 2000), // Discord's max message length
           username,
