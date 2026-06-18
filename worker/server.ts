@@ -40,8 +40,10 @@ async function handleRequest(req: { method: string; url: string; headers: Record
       return { status: 400, json: { error: "Missing workflowId or executionId" } };
     }
 
-    // Dynamically import to avoid loading Prisma/etc at startup before env is ready
-    const { runWorkflow } = await import("../src/lib/run-workflow");
+    // Dynamically import — handle both ESM named export and CJS default interop
+    const mod = await import("../src/lib/run-workflow");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const runWorkflow: typeof import("../src/lib/run-workflow").runWorkflow = mod.runWorkflow ?? (mod as any).default?.runWorkflow ?? (mod as any).default;
 
     // Acknowledge immediately, run workflow async (no timeout on VPS)
     setImmediate(() => {
