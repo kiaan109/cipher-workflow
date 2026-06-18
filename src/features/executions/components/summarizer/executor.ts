@@ -12,7 +12,27 @@ export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, n
   if (!data.variableName) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Variable name required"); }
   if (!data.text) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Text required"); }
 
-  const text = decode(renderTemplate(data.text, context as Record<string, unknown>));
+  let text = decode(renderTemplate(data.text, context as Record<string, unknown>));
+  // If rendered text looks like a JSON object/array, try to extract readable text from it
+  if (text.trim().startsWith("{") || text.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(text);
+      const extract = (obj: unknown): string => {
+        if (typeof obj === "string") return obj;
+        if (Array.isArray(obj)) return obj.map(extract).join(" ");
+        if (obj && typeof obj === "object") {
+          const o = obj as Record<string, unknown>;
+          for (const k of ["text", "content", "body", "message", "summary", "description"]) {
+            if (typeof o[k] === "string" && (o[k] as string).length > 10) return o[k] as string;
+          }
+          return Object.values(o).map(extract).filter(Boolean).join(" ");
+        }
+        return "";
+      };
+      const extracted = extract(parsed).trim();
+      if (extracted) text = extracted;
+    } catch { /* keep original text */ }
+  }
   const style = data.style || "concise";
   const model = data.model || "openai/gpt-oss-20b:free";
   const systemPrompt = `You are an expert summarizer. Summarize the following text in a ${style} manner. Return only the summary, no preamble.`;

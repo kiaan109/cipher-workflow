@@ -24,7 +24,7 @@ export const mistralExecutor: NodeExecutor<MistralData> = async ({ data, nodeId,
 
   try {
     const text = await step.run(`mistral-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "liquid/lfm-2.5-1.2b-instruct:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "mistralai/mistral-7b-instruct:free"),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(mistralChannel().status({ nodeId, status: "success" }));

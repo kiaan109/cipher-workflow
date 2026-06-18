@@ -24,7 +24,7 @@ export const qwenExecutor: NodeExecutor<QwenData> = async ({ data, nodeId, conte
 
   try {
     const text = await step.run(`qwen-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "liquid/lfm-2.5-1.2b-instruct:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "qwen/qwen-2.5-7b-instruct:free"),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(qwenChannel().status({ nodeId, status: "success" }));
