@@ -43,7 +43,7 @@ type ExecutionStep = {
 export const executeWorkflow = inngest.createFunction(
   {
     id: "execute-workflow",
-    retries: 0,
+    retries: 1,
     onFailure: async ({ event }) => {
       try {
         const execution = await prisma.execution.findFirst({ where: { inngestEventId: event.data.event.id }, include: { workflow: { select: { name: true, userId: true } } } });
