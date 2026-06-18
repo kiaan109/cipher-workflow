@@ -1,44 +1,25 @@
-import { after } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import prisma from "@/lib/db";
-import { ExecutionStatus, NodeType } from "@/generated/prisma";
-import { topologicalSort } from "@/inngest/utils";
-import { getExecutor } from "@/features/executions/lib/executor-registry";
+import { ExecutionStatus } from "@/generated/prisma";
+import { sendWorkflowExecution } from "@/inngest/utils";
 import { createId } from "@paralleldrive/cuid2";
-import { sendWorkflowEmail } from "@/lib/notify";
 
-export const maxDuration = 60;
-
-type ExecutionStep = {
-  nodeId: string;
-  nodeType: string;
-  nodeName: string;
-  status: "success" | "error";
-  output?: unknown;
-  error?: string;
-  completedAt: string;
-};
-
-// Shim: step.run just calls the function directly (no Inngest needed)
-const stepShim = {
-  run: async <T>(_name: string, fn: () => Promise<T>): Promise<T> => fn(),
-  sleep: async () => {},
-  waitForEvent: async () => null,
-  sendEvent: async () => {},
-  invoke: async () => null,
-};
-
-// No-op publish (realtime not needed for direct execution)
-const publishShim = async () => {};
+export const maxDuration = 15;
 
 export async function POST(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await requireAuth();
   const { id: workflowId } = await params;
 
-  // Create execution record immediately so frontend can navigate to it
+  // Verify workflow belongs to this user
+  const workflow = await prisma.workflow.findUniqueOrThrow({
+    where: { id: workflowId, userId: session.user.id },
+    select: { name: true },
+  });
+
+  // Pre-create the execution record so the frontend can navigate immediately
   const eventId = createId();
   const execution = await prisma.execution.create({
     data: {
@@ -48,110 +29,8 @@ export async function POST(
     },
   });
 
-  const executionId = execution.id;
-  const userId = session.user.id;
-  const userEmail = session.user.email;
+  // Hand off to Inngest — runs on Inngest's servers, survives device off/sleep/disconnect
+  await sendWorkflowExecution({ workflowId, eventId });
 
-  // Run workflow in background AFTER responding to the client
-  after(async () => {
-    const executionSteps: ExecutionStep[] = [];
-    let context: Record<string, unknown> = {};
-
-    try {
-      const workflow = await prisma.workflow.findUniqueOrThrow({
-        where: { id: workflowId },
-        include: { nodes: true, connections: true },
-      });
-
-      // Notify user the workflow has started
-      if (userEmail) {
-        await sendWorkflowEmail({ to: userEmail, workflowName: workflow.name, executionId, status: "started" });
-      }
-
-      const sortedNodes = topologicalSort(workflow.nodes, workflow.connections);
-
-      for (const node of sortedNodes) {
-        const executor = getExecutor(node.type as NodeType);
-
-        try {
-          context = await executor({
-            data: node.data as Record<string, unknown>,
-            nodeId: node.id,
-            userId,
-            context,
-            step: stepShim as never,
-            publish: publishShim as never,
-            bandRoomId: null,
-          });
-
-          const varName = (node.data as Record<string, unknown>)
-            ?.variableName as string | undefined;
-
-          executionSteps.push({
-            nodeId: node.id,
-            nodeType: node.type,
-            nodeName: node.name,
-            status: "success",
-            output: varName ? context[varName] : undefined,
-            completedAt: new Date().toISOString(),
-          });
-        } catch (err) {
-          executionSteps.push({
-            nodeId: node.id,
-            nodeType: node.type,
-            nodeName: node.name,
-            status: "error",
-            error: err instanceof Error ? err.message : String(err),
-            completedAt: new Date().toISOString(),
-          });
-          throw err;
-        }
-
-        // Save progress after each node so live polling sees it
-        await prisma.execution.update({
-          where: { id: executionId },
-          data: {
-            output: JSON.parse(
-              JSON.stringify({ _steps: executionSteps, ...context })
-            ),
-          },
-        });
-      }
-
-      await prisma.execution.update({
-        where: { id: executionId },
-        data: {
-          status: ExecutionStatus.SUCCESS,
-          completedAt: new Date(),
-          output: JSON.parse(JSON.stringify({ _steps: executionSteps, ...context })),
-        },
-      });
-
-      // Notify success
-      if (userEmail) {
-        const wf = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
-        await sendWorkflowEmail({ to: userEmail, workflowName: wf?.name ?? workflowId, executionId, status: "success" });
-      }
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      await prisma.execution.update({
-        where: { id: executionId },
-        data: {
-          status: ExecutionStatus.FAILED,
-          completedAt: new Date(),
-          error: errMsg,
-          output: JSON.parse(JSON.stringify({ _steps: executionSteps })),
-        },
-      }).catch(() => {});
-
-      // Notify failure
-      if (userEmail) {
-        const wf = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
-        await sendWorkflowEmail({ to: userEmail, workflowName: wf?.name ?? workflowId, executionId, status: "failed", error: errMsg });
-      }
-    }
-  });
-
-  const wfName = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
-  return Response.json({ executionId, workflowName: wfName?.name });
+  return Response.json({ executionId: execution.id, workflowName: workflow.name });
 }
