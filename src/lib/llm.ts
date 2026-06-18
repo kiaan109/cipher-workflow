@@ -20,6 +20,8 @@ const DEAD_MODELS = new Set([
   "google/gemma-2-9b-it:free",
   "google/gemma-3-1b-it:free",
   "google/gemma-3-12b-it:free",
+  "mistralai/mistral-7b-instruct:free",
+  "qwen/qwen-2.5-7b-instruct:free",
 ]);
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {

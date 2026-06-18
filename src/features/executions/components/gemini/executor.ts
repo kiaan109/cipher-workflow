@@ -24,7 +24,7 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({ data, nodeId, c
 
   try {
     const text = await step.run(`gemini-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "google/gemma-4-26b-a4b-it:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "google/gemma-4-31b-it:free"),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(geminiChannel().status({ nodeId, status: "success" }));
