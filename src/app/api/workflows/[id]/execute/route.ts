@@ -5,6 +5,7 @@ import { ExecutionStatus, NodeType } from "@/generated/prisma";
 import { topologicalSort } from "@/inngest/utils";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { createId } from "@paralleldrive/cuid2";
+import { sendWorkflowEmail } from "@/lib/notify";
 
 export const maxDuration = 60;
 
@@ -49,6 +50,7 @@ export async function POST(
 
   const executionId = execution.id;
   const userId = session.user.id;
+  const userEmail = session.user.email;
 
   // Run workflow in background AFTER responding to the client
   after(async () => {
@@ -60,6 +62,11 @@ export async function POST(
         where: { id: workflowId },
         include: { nodes: true, connections: true },
       });
+
+      // Notify user the workflow has started
+      if (userEmail) {
+        await sendWorkflowEmail({ to: userEmail, workflowName: workflow.name, executionId, status: "started" });
+      }
 
       const sortedNodes = topologicalSort(workflow.nodes, workflow.connections);
 
@@ -116,25 +123,35 @@ export async function POST(
         data: {
           status: ExecutionStatus.SUCCESS,
           completedAt: new Date(),
-          output: JSON.parse(
-            JSON.stringify({ _steps: executionSteps, ...context })
-          ),
+          output: JSON.parse(JSON.stringify({ _steps: executionSteps, ...context })),
         },
       });
+
+      // Notify success
+      if (userEmail) {
+        const wf = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
+        await sendWorkflowEmail({ to: userEmail, workflowName: wf?.name ?? workflowId, executionId, status: "success" });
+      }
     } catch (err) {
-      await prisma.execution
-        .update({
-          where: { id: executionId },
-          data: {
-            status: ExecutionStatus.FAILED,
-            completedAt: new Date(),
-            error: err instanceof Error ? err.message : String(err),
-            output: JSON.parse(JSON.stringify({ _steps: executionSteps })),
-          },
-        })
-        .catch(() => {});
+      const errMsg = err instanceof Error ? err.message : String(err);
+      await prisma.execution.update({
+        where: { id: executionId },
+        data: {
+          status: ExecutionStatus.FAILED,
+          completedAt: new Date(),
+          error: errMsg,
+          output: JSON.parse(JSON.stringify({ _steps: executionSteps })),
+        },
+      }).catch(() => {});
+
+      // Notify failure
+      if (userEmail) {
+        const wf = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
+        await sendWorkflowEmail({ to: userEmail, workflowName: wf?.name ?? workflowId, executionId, status: "failed", error: errMsg });
+      }
     }
   });
 
-  return Response.json({ executionId });
+  const wfName = await prisma.workflow.findUnique({ where: { id: workflowId }, select: { name: true } });
+  return Response.json({ executionId, workflowName: wfName?.name });
 }

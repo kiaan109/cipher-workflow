@@ -2,6 +2,7 @@ import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
 import { topologicalSort, computeParallelLevels } from "./utils";
+import { sendWorkflowEmail } from "@/lib/notify";
 import { ExecutionStatus, NodeType } from "@/generated/prisma";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { createBandRoom } from "@/lib/band";
@@ -45,15 +46,17 @@ export const executeWorkflow = inngest.createFunction(
     retries: process.env.NODE_ENV === "production" ? 3 : 0,
     onFailure: async ({ event }) => {
       try {
+        const execution = await prisma.execution.findFirst({ where: { inngestEventId: event.data.event.id }, include: { workflow: { select: { name: true, userId: true } } } });
         await prisma.execution.updateMany({
           where: { inngestEventId: event.data.event.id },
-          data: {
-            status: ExecutionStatus.FAILED,
-            error: event.data.error.message,
-            errorStack: event.data.error.stack,
-            completedAt: new Date(),
-          },
+          data: { status: ExecutionStatus.FAILED, error: event.data.error.message, errorStack: event.data.error.stack, completedAt: new Date() },
         });
+        if (execution?.workflow?.userId) {
+          const user = await prisma.user.findUnique({ where: { id: execution.workflow.userId }, select: { email: true } });
+          if (user?.email) {
+            await sendWorkflowEmail({ to: user.email, workflowName: execution.workflow.name, executionId: execution.id, status: "failed", error: event.data.error.message });
+          }
+        }
       } catch { /* execution record may not exist yet */ }
     },
   },
@@ -119,6 +122,18 @@ export const executeWorkflow = inngest.createFunction(
     });
 
     const userId = workflowInfo.userId;
+
+    // Send "started" email to user
+    const userEmail = await step.run("get-user-email", async () => {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      return user?.email ?? null;
+    });
+
+    if (userEmail) {
+      await step.run("notify-started", () =>
+        sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "started" }),
+      );
+    }
 
     const aiNodeTypes: NodeType[] = [
       NodeType.OPENAI, NodeType.ANTHROPIC, NodeType.GEMINI, NodeType.MISTRAL, NodeType.QWEN,
@@ -224,6 +239,13 @@ export const executeWorkflow = inngest.createFunction(
         },
       });
     });
+
+    // Send success email
+    if (userEmail) {
+      await step.run("notify-success", () =>
+        sendWorkflowEmail({ to: userEmail, workflowName: workflowInfo.name, executionId: inngestEventId, status: "success" }),
+      );
+    }
 
     return { workflowId, result: context };
   },
