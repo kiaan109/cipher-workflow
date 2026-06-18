@@ -82,9 +82,9 @@ export const AnthropicDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Anthropic Configuration</DialogTitle>
+          <DialogTitle>Anthropic Agent</DialogTitle>
           <DialogDescription>
-            Configure the AI model and prompts for this node.
+            Powered by OpenRouter · <code className="text-xs">deepseek/deepseek-r1:free</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

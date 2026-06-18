@@ -82,9 +82,9 @@ export const GeminiDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Gemini Configuration</DialogTitle>
+          <DialogTitle>Gemini Agent</DialogTitle>
           <DialogDescription>
-            Configure the AI model and prompts for this node.
+            Powered by OpenRouter · <code className="text-xs">google/gemma-3-27b-it:free</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

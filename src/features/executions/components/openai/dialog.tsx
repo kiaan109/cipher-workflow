@@ -82,9 +82,9 @@ export const OpenAiDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>OpenAI Configuration</DialogTitle>
+          <DialogTitle>OpenAI Agent</DialogTitle>
           <DialogDescription>
-            Configure the AI model and prompts for this node.
+            Powered by OpenRouter · <code className="text-xs">meta-llama/llama-3.3-8b-instruct:free</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
