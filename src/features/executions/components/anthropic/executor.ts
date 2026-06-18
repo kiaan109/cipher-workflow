@@ -24,7 +24,7 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({ data, nod
 
   try {
     const text = await step.run(`anthropic-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "openai/gpt-oss-120b:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "openai/gpt-oss-20b:free"),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(anthropicChannel().status({ nodeId, status: "success" }));
@@ -34,5 +34,6 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({ data, nod
     throw error;
   }
 };
+
 
 
