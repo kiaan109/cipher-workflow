@@ -49,7 +49,7 @@ export async function callLLM(
           if (!text) throw new Error("Empty response");
           return text;
         }),
-        25000, // 25s hard timeout per model
+        8000, // 8s hard timeout per model
       );
       return result;
     } catch (err) {

@@ -1,10 +1,14 @@
 import prisma from "@/lib/db";
 import { ExecutionStatus } from "@/generated/prisma";
-import { runWorkflow } from "@/lib/run-workflow";
 import { createId } from "@paralleldrive/cuid2";
-import { after } from "next/server";
 
-export const maxDuration = 300;
+export const maxDuration = 15;
+
+function getAppUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
 
 // POST /api/webhooks/trigger/[workflowId]
 // Body: any JSON - available as {{webhookData.body}} in downstream nodes
@@ -46,9 +50,15 @@ export async function POST(
     data: { workflowId, inngestEventId: eventId, status: ExecutionStatus.RUNNING },
   });
 
-  after(async () => {
-    await runWorkflow({ workflowId, executionId: execution.id, initialData });
-  });
+  const runUrl = `${getAppUrl()}/api/run-workflow`;
+  fetch(runUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
+    },
+    body: JSON.stringify({ workflowId, executionId: execution.id, initialData }),
+  }).catch(() => {});
 
   return Response.json({ ok: true, executionId: execution.id });
 }

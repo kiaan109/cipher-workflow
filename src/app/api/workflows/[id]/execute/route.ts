@@ -1,12 +1,15 @@
 import { requireAuth } from "@/lib/auth-utils";
 import prisma from "@/lib/db";
 import { ExecutionStatus } from "@/generated/prisma";
-import { runWorkflow } from "@/lib/run-workflow";
 import { createId } from "@paralleldrive/cuid2";
-import { after } from "next/server";
 
-// 5 min max — workflows can take time
-export const maxDuration = 300;
+export const maxDuration = 15;
+
+function getAppUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
 
 export async function POST(
   _req: Request,
@@ -30,10 +33,17 @@ export async function POST(
     },
   });
 
-  // Run the workflow after the HTTP response is sent (Next.js 15 built-in)
-  after(async () => {
-    await runWorkflow({ workflowId, executionId: execution.id });
-  });
+  // Fire-and-forget: invoke the dedicated run-workflow function as a separate
+  // Vercel invocation so it gets its own timeout budget (up to maxDuration=300).
+  const runUrl = `${getAppUrl()}/api/run-workflow`;
+  fetch(runUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
+    },
+    body: JSON.stringify({ workflowId, executionId: execution.id }),
+  }).catch(() => {});
 
   return Response.json({ executionId: execution.id, workflowName: workflow.name });
 }

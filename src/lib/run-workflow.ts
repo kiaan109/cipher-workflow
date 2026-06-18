@@ -59,7 +59,7 @@ export async function runWorkflow({
       try {
         const room = await Promise.race([
           createBandRoom(`${workflowName} - ${executionId}`),
-          new Promise<null>(resolve => setTimeout(() => resolve(null), 4000)),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), 2000)),
         ]);
         if (room) {
           bandRoomId = room.id;
