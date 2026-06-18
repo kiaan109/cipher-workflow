@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import { Button } from "@/components/ui/button";
-import { FlaskConicalIcon, Loader2Icon, MailIcon, XIcon, ArrowRightIcon, CheckIcon } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { FlaskConicalIcon, Loader2Icon, ArrowRightIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,84 +11,56 @@ function ExecutionStartedModal({ workflowName, executionId, onClose }: { workflo
   const router = useRouter();
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
+    <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-xs p-0 gap-0 overflow-hidden rounded-2xl">
+        {/* Top accent strip */}
+        <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
 
-      {/* Modal */}
-      <div className="relative w-full sm:max-w-sm mx-auto rounded-2xl border border-white/10 bg-[#0f0f12] shadow-[0_0_80px_rgba(139,92,246,0.15)] overflow-hidden">
-        {/* Purple glow top accent */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
-
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-white/30 hover:text-white/70 transition-colors z-10"
-          aria-label="Close"
-        >
-          <XIcon className="size-4" />
-        </button>
-
-        <div className="px-8 pt-10 pb-8 flex flex-col items-center gap-6">
-          {/* Icon with rings */}
+        <div className="px-6 py-8 flex flex-col items-center gap-5 text-center">
+          {/* Animated icon */}
           <div className="relative flex items-center justify-center">
-            <span className="absolute size-20 rounded-full bg-purple-500/10 animate-ping" style={{ animationDuration: "2s" }} />
-            <span className="absolute size-16 rounded-full bg-purple-500/15" />
-            <span className="relative flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-violet-700 shadow-lg shadow-purple-500/30">
-              <FlaskConicalIcon className="size-7 text-white" />
+            <span className="absolute size-16 rounded-full bg-violet-500/10 animate-ping" style={{ animationDuration: "1.8s" }} />
+            <span className="relative flex size-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/40">
+              <FlaskConicalIcon className="size-6 text-violet-600 dark:text-violet-400" />
             </span>
           </div>
 
-          {/* Heading */}
-          <div className="text-center space-y-1.5">
-            <h2 className="text-2xl font-bold text-white tracking-tight">Workflow running</h2>
+          {/* Title + badge */}
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold text-foreground">Workflow started</h2>
             {workflowName && (
-              <p className="text-sm font-medium text-purple-400/90 bg-purple-500/10 px-3 py-1 rounded-full inline-block border border-purple-500/20">
+              <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
                 {workflowName}
-              </p>
+              </span>
             )}
           </div>
 
-          {/* Info card */}
-          <div className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] p-4 flex gap-3">
-            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/20 border border-purple-500/30">
-              <MailIcon className="size-4 text-purple-400" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <p className="text-sm font-semibold text-white leading-snug">You can close this page</p>
-              <p className="text-sm text-white/50 leading-relaxed">
-                Your workflow runs in the cloud. We&apos;ll email you when it finishes.
-              </p>
-            </div>
+          {/* Status pill */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Running in background
           </div>
 
-          {/* Status indicator */}
-          <div className="flex items-center gap-2 text-xs text-white/40">
-            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Running on Cipher cloud
-          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
+            You can close this page — the workflow keeps running and you&apos;ll get an email when it&apos;s done.
+          </p>
 
-          {/* Buttons */}
-          <div className="w-full flex flex-col gap-2.5">
+          {/* Actions */}
+          <div className="w-full flex flex-col gap-2">
             <Button
-              className="w-full h-11 bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm gap-2 transition-all"
+              className="w-full gap-2 bg-violet-600 hover:bg-violet-700 text-white"
               onClick={() => { onClose(); router.push(`/executions/${executionId}`); }}
             >
-              Watch live
+              View progress
               <ArrowRightIcon className="size-4" />
             </Button>
-            <Button
-              variant="ghost"
-              className="w-full h-10 text-white/50 hover:text-white/80 hover:bg-white/5 text-sm font-medium"
-              onClick={onClose}
-            >
-              <CheckIcon className="size-3.5 mr-1.5" />
-              Got it, close
+            <Button variant="ghost" className="w-full text-muted-foreground" onClick={onClose}>
+              Close
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

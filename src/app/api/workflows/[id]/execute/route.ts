@@ -1,10 +1,12 @@
 import { requireAuth } from "@/lib/auth-utils";
 import prisma from "@/lib/db";
 import { ExecutionStatus } from "@/generated/prisma";
-import { sendWorkflowExecution } from "@/inngest/utils";
+import { runWorkflow } from "@/lib/run-workflow";
 import { createId } from "@paralleldrive/cuid2";
+import { after } from "next/server";
 
-export const maxDuration = 15;
+// 5 min max — workflows can take time
+export const maxDuration = 300;
 
 export async function POST(
   _req: Request,
@@ -13,24 +15,25 @@ export async function POST(
   const session = await requireAuth();
   const { id: workflowId } = await params;
 
-  // Verify workflow belongs to this user
   const workflow = await prisma.workflow.findUniqueOrThrow({
     where: { id: workflowId, userId: session.user.id },
     select: { name: true },
   });
 
-  // Pre-create the execution record so the frontend can navigate immediately
-  const eventId = createId();
+  // Pre-create execution record so the frontend can navigate immediately
+  const executionId = createId();
   const execution = await prisma.execution.create({
     data: {
       workflowId,
-      inngestEventId: eventId,
+      inngestEventId: executionId,
       status: ExecutionStatus.RUNNING,
     },
   });
 
-  // Hand off to Inngest — runs on Inngest's servers, survives device off/sleep/disconnect
-  await sendWorkflowExecution({ workflowId, eventId });
+  // Run the workflow after the HTTP response is sent (Next.js 15 built-in)
+  after(async () => {
+    await runWorkflow({ workflowId, executionId: execution.id });
+  });
 
   return Response.json({ executionId: execution.id, workflowName: workflow.name });
 }

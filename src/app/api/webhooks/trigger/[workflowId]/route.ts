@@ -1,9 +1,10 @@
 import prisma from "@/lib/db";
 import { ExecutionStatus } from "@/generated/prisma";
-import { sendWorkflowExecution } from "@/inngest/utils";
+import { runWorkflow } from "@/lib/run-workflow";
 import { createId } from "@paralleldrive/cuid2";
+import { after } from "next/server";
 
-export const maxDuration = 15;
+export const maxDuration = 300;
 
 // POST /api/webhooks/trigger/[workflowId]
 // Body: any JSON - available as {{webhookData.body}} in downstream nodes
@@ -45,7 +46,9 @@ export async function POST(
     data: { workflowId, inngestEventId: eventId, status: ExecutionStatus.RUNNING },
   });
 
-  await sendWorkflowExecution({ workflowId, eventId, initialData });
+  after(async () => {
+    await runWorkflow({ workflowId, executionId: execution.id, initialData });
+  });
 
   return Response.json({ ok: true, executionId: execution.id });
 }
