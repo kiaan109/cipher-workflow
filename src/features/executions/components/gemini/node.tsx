@@ -46,7 +46,7 @@ export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `gemma-3-27b (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `gemma-4-26b (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (

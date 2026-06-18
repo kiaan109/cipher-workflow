@@ -84,7 +84,7 @@ export const GeminiDialog = ({
         <DialogHeader>
           <DialogTitle>Gemini Agent</DialogTitle>
           <DialogDescription>
-            Powered by OpenRouter · <code className="text-xs">google/gemma-3-27b-it:free</code>
+            Powered by OpenRouter · <code className="text-xs">google/gemma-4-26b-a4b-it:free</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

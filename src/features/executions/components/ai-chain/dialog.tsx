@@ -12,9 +12,9 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 
 const MODELS = [
-  { id: "google/gemma-3-27b-it:free", label: "Gemma 3 27B (Free)" },
-  { id: "meta-llama/llama-3.3-8b-instruct:free", label: "Llama 3.3 8B (Free)" },
-  { id: "deepseek/deepseek-r1:free", label: "DeepSeek R1 (Free)" },
+  { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (Free)" },
+  { id: "openai/gpt-oss-20b:free", label: "GPT-OSS 20B (Free)" },
+  { id: "openai/gpt-oss-120b:free", label: "GPT-OSS 120B (Free)" },
   { id: "mistralai/mistral-7b-instruct:free", label: "Mistral 7B (Free)" },
 ];
 

@@ -16,8 +16,8 @@ export type SummarizerFormValues = z.infer<typeof schema>;
 interface Props { open: boolean; onOpenChange: (o: boolean) => void; onSubmit: (v: SummarizerFormValues) => void; defaultValues?: Partial<SummarizerFormValues>; }
 
 export const SummarizerDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
-  const form = useForm<SummarizerFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", text: "", style: "concise", model: "google/gemma-3-27b-it:free", ...defaultValues } });
-  useEffect(() => { if (open) form.reset({ variableName: "", text: "", style: "concise", model: "google/gemma-3-27b-it:free", ...defaultValues }); }, [open]);
+  const form = useForm<SummarizerFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", text: "", style: "concise", model: "meta-llama/llama-3.3-70b-instruct:free", ...defaultValues } });
+  useEffect(() => { if (open) form.reset({ variableName: "", text: "", style: "concise", model: "meta-llama/llama-3.3-70b-instruct:free", ...defaultValues }); }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Summarization Chain</DialogTitle><DialogDescription>Summarize text using AI</DialogDescription></DialogHeader>
       <Form {...form}><form onSubmit={form.handleSubmit(v => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-2">

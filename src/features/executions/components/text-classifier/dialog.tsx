@@ -15,8 +15,8 @@ export type TextClassifierFormValues = z.infer<typeof schema>;
 interface Props { open: boolean; onOpenChange: (o: boolean) => void; onSubmit: (v: TextClassifierFormValues) => void; defaultValues?: Partial<TextClassifierFormValues>; }
 
 export const TextClassifierDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
-  const form = useForm<TextClassifierFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", text: "", categories: "Positive, Negative, Neutral", model: "google/gemma-3-27b-it:free", ...defaultValues } });
-  useEffect(() => { if (open) form.reset({ variableName: "", text: "", categories: "Positive, Negative, Neutral", model: "google/gemma-3-27b-it:free", ...defaultValues }); }, [open]);
+  const form = useForm<TextClassifierFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", text: "", categories: "Positive, Negative, Neutral", model: "meta-llama/llama-3.3-70b-instruct:free", ...defaultValues } });
+  useEffect(() => { if (open) form.reset({ variableName: "", text: "", categories: "Positive, Negative, Neutral", model: "meta-llama/llama-3.3-70b-instruct:free", ...defaultValues }); }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Text Classifier</DialogTitle><DialogDescription>Classify text into predefined categories using AI</DialogDescription></DialogHeader>
       <Form {...form}><form onSubmit={form.handleSubmit(v => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-2">

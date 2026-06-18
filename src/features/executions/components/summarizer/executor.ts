@@ -34,7 +34,7 @@ export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, n
     } catch { /* keep original text */ }
   }
   const style = data.style || "concise";
-  const model = data.model || "openai/gpt-oss-20b:free";
+  const model = data.model || "meta-llama/llama-3.3-70b-instruct:free";
   const systemPrompt = `You are an expert summarizer. Summarize the following text in a ${style} manner. Return only the summary, no preamble.`;
 
   try {
