@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MESSAGES = [
@@ -14,16 +14,25 @@ const MESSAGES = [
 export default function BandIntegrationSection() {
   const [visibleCount, setVisibleCount] = useState(1);
   const [typing, setTyping] = useState(false);
+  const typingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => {
       setTyping(true);
-      setTimeout(() => {
+      if (typingTimeoutRef.current !== null) {
+        window.clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = window.setTimeout(() => {
         setTyping(false);
         setVisibleCount(c => (c >= MESSAGES.length ? 1 : c + 1));
       }, 1000);
     }, 2200);
-    return () => clearInterval(t);
+    return () => {
+      clearInterval(t);
+      if (typingTimeoutRef.current !== null) {
+        window.clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, []);
 
   const shown = MESSAGES.slice(0, visibleCount);

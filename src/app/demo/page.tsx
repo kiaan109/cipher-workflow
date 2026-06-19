@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DEMO_NODES = [
   {
@@ -74,24 +74,43 @@ type Status = "idle" | "running" | "done";
 export default function DemoPage() {
   const [runState, setRunState] = useState<Status>("idle");
   const [stepIndex, setStepIndex] = useState(-1);
+  const timersRef = useRef<number[]>([]);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      timersRef.current.forEach((timer) => window.clearTimeout(timer));
+      timersRef.current = [];
+    };
+  }, []);
+
+  const clearTimers = () => {
+    timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    timersRef.current = [];
+  };
 
   const handleRun = () => {
+    clearTimers();
+    mountedRef.current = true;
     setRunState("running");
     setStepIndex(0);
     let i = 0;
     const tick = () => {
       i++;
+      if (!mountedRef.current) return;
       setStepIndex(i);
       if (i < STEPS.length) {
-        setTimeout(tick, 900 + Math.random() * 400);
+        timersRef.current.push(window.setTimeout(tick, 900 + Math.random() * 400));
       } else {
         setRunState("done");
       }
     };
-    setTimeout(tick, 900);
+    timersRef.current.push(window.setTimeout(tick, 900));
   };
 
   const handleReset = () => {
+    clearTimers();
     setRunState("idle");
     setStepIndex(-1);
   };
@@ -113,7 +132,7 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="demo-page min-h-screen bg-white text-zinc-900 flex flex-col">
+    <div className="demo-page min-h-screen bg-[#f7f8fc] text-zinc-900 flex flex-col">
       <style>{`
         @keyframes pulse-ring {
           0%, 100% { opacity: 0.5; transform: scale(1); }
@@ -140,16 +159,16 @@ export default function DemoPage() {
       `}</style>
 
       {/* Top bar */}
-      <div className="border-b border-white/[0.06] px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium">
+      <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-xl px-6 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 text-zinc-600 hover:text-zinc-950 transition-colors text-sm font-medium">
           <svg viewBox="0 0 24 24" fill="none" className="size-4" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
           Back to home
         </Link>
 
-        <div className="flex items-center gap-2 text-sm font-semibold text-white">
-          <div className="size-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-sm font-semibold text-zinc-950">
+          <div className="size-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
             <svg viewBox="0 0 24 24" fill="none" className="size-3.5 text-white" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
             </svg>
@@ -157,24 +176,29 @@ export default function DemoPage() {
           Cipher — Demo
         </div>
 
-        <Link
-          href="/signup"
-          className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02]"
-        >
-          Start free →
-        </Link>
+        <div className="flex items-center gap-3">
+          <span className="hidden sm:inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
+            Live workflow demo
+          </span>
+          <Link
+            href="/signup"
+            className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02]"
+          >
+            Start free →
+          </Link>
+        </div>
       </div>
 
       {/* Main */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Canvas */}
-        <div className="flex-1 relative bg-[#0d0d12]" style={{
-          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px)",
+        <div className="flex-1 relative bg-gradient-to-br from-white via-slate-50 to-slate-100" style={{
+          backgroundImage: "radial-gradient(circle, rgba(15,23,42,0.05) 1px, transparent 1px)",
           backgroundSize: "28px 28px"
         }}>
           {/* Toolbar */}
           <div className="absolute top-4 left-4 flex items-center gap-2 z-20">
-            <div className="px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-xs text-zinc-500 font-medium">
+            <div className="px-3 py-1.5 rounded-lg bg-white/80 border border-slate-200 text-xs text-slate-600 font-medium shadow-sm backdrop-blur">
               Webhook → AI Agent → Notify
             </div>
           </div>
@@ -184,7 +208,7 @@ export default function DemoPage() {
             {runState !== "idle" && (
               <button
                 onClick={handleReset}
-                className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.04] text-zinc-400 hover:text-white text-sm font-medium transition-all"
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white/90 text-slate-600 hover:text-slate-950 text-sm font-medium transition-all shadow-sm"
               >
                 Reset
               </button>
@@ -192,7 +216,7 @@ export default function DemoPage() {
             <button
               onClick={handleRun}
               disabled={runState === "running"}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:scale-[1.02]"
             >
               {runState === "running" ? (
                 <>
@@ -236,7 +260,7 @@ export default function DemoPage() {
                   <path
                     key={i}
                     d={edge.d}
-                    stroke={edge.active ? "rgba(99,102,241,0.7)" : "rgba(255,255,255,0.1)"}
+                    stroke={edge.active ? "rgba(99,102,241,0.7)" : "rgba(148,163,184,0.22)"}
                     strokeWidth="1.5"
                     fill="none"
                     strokeDasharray="6 4"
@@ -261,17 +285,17 @@ export default function DemoPage() {
                     <div
                       className="relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold select-none cursor-default transition-all duration-300"
                       style={{
-                        background: isIdle ? "rgba(255,255,255,0.03)" : node.bg,
-                        border: `1.5px solid ${isIdle ? "rgba(255,255,255,0.08)" : node.border}`,
+                        background: isIdle ? "rgba(255,255,255,0.88)" : node.bg,
+                        border: `1.5px solid ${isIdle ? "rgba(203,213,225,0.9)" : node.border}`,
                         minWidth: "130px",
-                        boxShadow: isDone ? `0 0 20px ${node.color}20` : isRunning ? `0 0 30px ${node.color}40` : "none",
+                        boxShadow: isDone ? `0 12px 28px ${node.color}12` : isRunning ? `0 18px 36px ${node.color}20` : "0 10px 24px rgba(15,23,42,0.06)",
                       }}
                     >
                       {/* Status dot */}
                       <div className="relative shrink-0">
                         <span
                           className="size-2.5 rounded-full block"
-                          style={{ background: isIdle ? "rgba(255,255,255,0.15)" : statusColor[ns] }}
+                          style={{ background: isIdle ? "rgba(148,163,184,0.35)" : statusColor[ns] }}
                         />
                         {isRunning && (
                           <span
@@ -281,8 +305,8 @@ export default function DemoPage() {
                         )}
                       </div>
                       <div>
-                        <div className="text-white/90 text-[13px]">{node.label}</div>
-                        <div className="text-white/35 text-[11px] font-normal">{node.sub}</div>
+                        <div className="text-zinc-900 text-[13px]">{node.label}</div>
+                        <div className="text-slate-500 text-[11px] font-normal">{node.sub}</div>
                       </div>
                       {/* Check mark */}
                       {isDone && (
@@ -301,7 +325,7 @@ export default function DemoPage() {
 
           {/* Idle hint */}
           {runState === "idle" && (
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] text-zinc-500 text-sm animate-bounce">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white/90 text-slate-600 text-sm animate-bounce shadow-sm backdrop-blur">
               <svg viewBox="0 0 24 24" fill="currentColor" className="size-4 text-indigo-400">
                 <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
               </svg>
@@ -310,7 +334,7 @@ export default function DemoPage() {
           )}
 
           {runState === "done" && (
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-sm font-medium fade-in">
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-500/20 bg-emerald-50 text-emerald-700 text-sm font-medium fade-in shadow-sm">
               <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
                 <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
               </svg>
@@ -320,28 +344,28 @@ export default function DemoPage() {
         </div>
 
         {/* Right panel: execution log */}
-        <div className="w-full lg:w-80 xl:w-96 border-t lg:border-t-0 lg:border-l border-white/[0.06] flex flex-col bg-[#0a0a10]">
+        <div className="w-full lg:w-80 xl:w-96 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col bg-white/95 backdrop-blur-xl">
           {/* Panel header */}
-          <div className="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between">
-            <span className="text-sm font-semibold text-white">Execution log</span>
+          <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+            <span className="text-sm font-semibold text-zinc-900">Execution log</span>
             {runState === "running" && (
               <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-medium">
-                <span className="size-1.5 rounded-full bg-indigo-400 pulse-ring" />
+                <span className="size-1.5 rounded-full bg-indigo-500 pulse-ring" />
                 Live
               </div>
             )}
             {runState === "done" && (
-              <span className="text-xs font-medium text-emerald-400">Done</span>
+              <span className="text-xs font-medium text-emerald-600">Done</span>
             )}
             {runState === "idle" && (
-              <span className="text-xs text-zinc-600">Waiting</span>
+              <span className="text-xs text-slate-500">Waiting</span>
             )}
           </div>
 
           {/* Steps */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {runState === "idle" ? (
-              <div className="text-center py-16 text-zinc-600 text-sm">
+              <div className="text-center py-16 text-slate-500 text-sm">
                 <svg viewBox="0 0 24 24" fill="none" className="size-10 mx-auto mb-3 opacity-30" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
                 </svg>
@@ -356,31 +380,31 @@ export default function DemoPage() {
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 shrink-0">
                         {isDone ? (
-                          <div className="size-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                            <div className="size-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
                             <svg viewBox="0 0 16 16" fill="none" className="size-3 text-emerald-400">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} stroke="currentColor" d="M2.5 8l3.5 3.5L13.5 4" />
                             </svg>
                           </div>
                         ) : isActive ? (
-                          <div className="size-5 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center">
+                            <div className="size-5 rounded-full bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
                             <span className="size-2 rounded-full border border-indigo-300/40 border-t-indigo-300 spin" />
                           </div>
                         ) : (
-                          <div className="size-5 rounded-full bg-white/5 border border-white/10" />
+                            <div className="size-5 rounded-full bg-slate-100 border border-slate-200" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-white">{step.label}</p>
+                        <p className="text-xs font-semibold text-zinc-900">{step.label}</p>
                         {step.output && isDone && (
-                          <pre className="mt-1.5 text-[11px] font-mono text-zinc-500 bg-white/[0.03] border border-white/[0.06] rounded-lg p-2.5 whitespace-pre-wrap break-all leading-relaxed">
+                          <pre className="mt-1.5 text-[11px] font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-2.5 whitespace-pre-wrap break-all leading-relaxed">
                             {step.output}
                           </pre>
                         )}
                         {isActive && (
-                          <p className="text-[11px] text-indigo-400 mt-1 font-medium">Processing…</p>
+                          <p className="text-[11px] text-indigo-600 mt-1 font-medium">Processing…</p>
                         )}
                       </div>
-                      <span className="text-[10px] text-zinc-600 mt-0.5 shrink-0">
+                      <span className="text-[10px] text-slate-500 mt-0.5 shrink-0">
                         {new Date().toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                       </span>
                     </div>
@@ -391,10 +415,10 @@ export default function DemoPage() {
           </div>
 
           {/* Sign up CTA */}
-          <div className="p-4 border-t border-white/[0.06]">
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 p-4">
-              <p className="text-sm font-bold text-white mb-1">Ready to build your own?</p>
-              <p className="text-xs text-zinc-500 mb-3">Start with 100 free executions — no credit card.</p>
+          <div className="p-4 border-t border-slate-200 bg-slate-50/80">
+            <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+              <p className="text-sm font-bold text-zinc-900 mb-1">Ready to build your own?</p>
+              <p className="text-xs text-slate-500 mb-3">Start with 100 free executions — no credit card.</p>
               <Link
                 href="/signup"
                 className="block text-center py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.01]"

@@ -9,6 +9,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
   const [count, setCount] = useState(0);
   const [wordIdx, setWordIdx] = useState(0);
   const doneRef = useRef(false);
+  const completeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const start = performance.now();
@@ -18,10 +19,18 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
       const p = Math.min((now - start) / DURATION, 1);
       setCount(Math.round(p * 100));
       if (p < 1) { raf = requestAnimationFrame(tick); }
-      else if (!doneRef.current) { doneRef.current = true; setTimeout(onComplete, 400); }
+      else if (!doneRef.current) {
+        doneRef.current = true;
+        completeTimerRef.current = window.setTimeout(onComplete, 400);
+      }
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (completeTimerRef.current !== null) {
+        window.clearTimeout(completeTimerRef.current);
+      }
+    };
   }, [onComplete]);
 
   useEffect(() => {
