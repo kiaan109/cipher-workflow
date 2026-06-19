@@ -16,6 +16,7 @@ import { useSuspenseExecution } from "@/features/executions/hooks/use-executions
 import { useTRPC } from "@/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { BandLiveFeed } from "@/components/band-live-feed";
 
 type NodeStep = {
   nodeId: string;
@@ -196,6 +197,14 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </div>
         )}
       </div>
+
+      {/* Band Agent Room Live Feed */}
+      {execution.bandRoomId && (
+        <BandLiveFeed
+          roomId={execution.bandRoomId}
+          isRunning={execution.status === ExecutionStatus.RUNNING}
+        />
+      )}
 
       {/* Node Steps */}
       {steps.length > 0 ? (

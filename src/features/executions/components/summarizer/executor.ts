@@ -2,12 +2,13 @@
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { cipherChannel } from "@/inngest/channels/cipher";
+import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
 type SummarizerData = { variableName?: string; text?: string; style?: string; model?: string };
 
-export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, nodeId, context, step, publish }) => {
+export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, nodeId, context, step, publish, bandRoomId }) => {
   await publish(cipherChannel().status({ nodeId, status: "loading" }));
   if (!data.variableName) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Variable name required"); }
   if (!data.text) { await publish(cipherChannel().status({ nodeId, status: "error" })); throw new NonRetriableError("Summarizer: Text required"); }
@@ -37,13 +38,17 @@ export const summarizerExecutor: NodeExecutor<SummarizerData> = async ({ data, n
   const model = data.model || "meta-llama/llama-3.3-70b-instruct:free";
   const systemPrompt = `You are an expert summarizer. Summarize the following text in a ${style} manner. Return only the summary, no preamble.`;
 
+  if (bandRoomId) void sendBandMessage(bandRoomId, "Summarizer", `📥 Summarizing (${text.length} chars, style: ${style})…`);
+
   try {
     const summary = await step.run(`summarizer-run-${nodeId}`, () =>
       callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: text }], model),
     );
+    if (bandRoomId) void sendBandMessage(bandRoomId, "Summarizer", `✅ Summary:\n${summary}`);
     await publish(cipherChannel().status({ nodeId, status: "success" }));
     return { ...context, [data.variableName!]: { summary, originalLength: text.length } };
   } catch (err) {
+    if (bandRoomId) void sendBandMessage(bandRoomId, "Summarizer", `❌ Error: ${err instanceof Error ? err.message : String(err)}`);
     await publish(cipherChannel().status({ nodeId, status: "error" }));
     throw err;
   }

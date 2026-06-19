@@ -3,6 +3,7 @@ import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { cipherChannel } from "@/inngest/channels/cipher";
+import { sendBandMessage } from "@/lib/band";
 import ky from "ky";
 
 Handlebars.registerHelper("json", (ctx) => new Handlebars.SafeString(JSON.stringify(ctx, null, 2)));
@@ -16,7 +17,7 @@ type AiAgentData = {
   maxIterations?: number;
 };
 
-export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId, context, step, publish }) => {
+export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId, context, step, publish, bandRoomId }) => {
   await publish(cipherChannel().status({ nodeId, status: "loading" }));
 
   if (!data.variableName) {
@@ -29,8 +30,11 @@ export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId,
   }
 
   const model = data.model || "openai/gpt-oss-20b:free";
+  const agentName = (data as Record<string, unknown>).name as string || "AI Agent";
   const systemPrompt = decode(Handlebars.compile(data.systemPrompt || "You are a helpful AI agent. Complete the task given to you.")(context));
   const userPrompt = decode(Handlebars.compile(data.userPrompt)(context));
+
+  if (bandRoomId) void sendBandMessage(bandRoomId, agentName, `📥 Task received:\n${userPrompt}`);
 
   try {
     const result = await step.run("ai-agent-run", async () => {
@@ -52,6 +56,7 @@ export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId,
       }).json<{ choices: { message: { content: string } }[] }>();
 
       const text = response.choices[0]?.message?.content || "";
+      if (bandRoomId) void sendBandMessage(bandRoomId, agentName, `✅ Response:\n${text}`);
       return {
         ...context,
         [data.variableName!]: { text, model, role: "agent" },
@@ -61,6 +66,7 @@ export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId,
     await publish(cipherChannel().status({ nodeId, status: "success" }));
     return result;
   } catch (error) {
+    if (bandRoomId) void sendBandMessage(bandRoomId, agentName, `❌ Error: ${error instanceof Error ? error.message : String(error)}`);
     await publish(cipherChannel().status({ nodeId, status: "error" }));
     throw error;
   }
