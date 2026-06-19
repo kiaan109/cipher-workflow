@@ -216,16 +216,17 @@
 
 /* ── Liquid Glass — Apple Vision Pro style ── */
 .liquid-glass {
-  background: rgba(255,255,255,0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255,255,255,0.92);
   box-shadow:
-    0 2px 16px rgba(99,102,241,0.06),
-    inset 0 1px 0 rgba(255,255,255,0.9),
+    0 8px 30px rgba(99,102,241,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.95),
     inset 0 -1px 0 rgba(0,0,0,0.04);
   position: relative;
   overflow: hidden;
+  border-radius: 1.25rem;
 }
 .liquid-glass::before {
   content: "";
@@ -238,17 +239,18 @@
   pointer-events: none;
 }
 .liquid-glass-strong {
-  background: rgba(255,255,255,0.78);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(34px) saturate(200%);
+  -webkit-backdrop-filter: blur(34px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.96);
   box-shadow:
-    0 8px 32px rgba(99,102,241,0.08),
-    0 2px 8px rgba(0,0,0,0.04),
+    0 14px 42px rgba(99,102,241,0.09),
+    0 2px 10px rgba(0,0,0,0.04),
     inset 0 1px 0 rgba(255,255,255,1),
     inset 0 -1px 0 rgba(0,0,0,0.03);
   position: relative;
   overflow: hidden;
+  border-radius: 1.5rem;
 }
 .liquid-glass-strong::before {
   content: "";
@@ -262,15 +264,16 @@
 }
 /* Card-level glass for dashboard items */
 .glass-card {
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.84);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255,255,255,0.92);
   box-shadow:
-    0 4px 24px rgba(99,102,241,0.07),
+    0 10px 30px rgba(99,102,241,0.08),
     0 1px 4px rgba(0,0,0,0.04),
     inset 0 1px 0 rgba(255,255,255,0.95);
   transition: box-shadow 0.2s ease, transform 0.15s ease;
+  border-radius: 1.25rem;
 }
 .glass-card:hover {
   box-shadow:
@@ -348,7 +351,11 @@
 .landing-page p,
 .landing-page span,
 .landing-page a,
-.landing-page button {
+.landing-page button,
+.landing-page div,
+.landing-page li,
+.landing-page label,
+.landing-page small {
   color: #27272a !important;
 }
 .landing-page section,
@@ -376,7 +383,9 @@
 .auth-page span,
 .auth-page label,
 .auth-page input,
-.auth-page a {
+.auth-page a,
+.auth-page div,
+.auth-page small {
   color: #27272a !important;
 }
 .auth-page input,
@@ -403,7 +412,11 @@
 .demo-page p,
 .demo-page span,
 .demo-page a,
-.demo-page button {
+.demo-page button,
+.demo-page div,
+.demo-page li,
+.demo-page label,
+.demo-page small {
   color: #27272a !important;
 }
 
