@@ -47,31 +47,71 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
   }
 
   const message = decode(Handlebars.compile(data.message)(context));
+  // Strip non-digits from recipient number — WhatsApp API requires digits only
+  const toNum = (data.to ?? "").replace(/\D/g, "");
+
+  if (!toNum) {
+    await publish(whatsappChannel().status({ nodeId, status: "error" }));
+    throw new NonRetriableError("WhatsApp node: Recipient phone number contains no digits");
+  }
 
   try {
     const result = await step.run("whatsapp-send-message", async () => {
-      const response = await ky.post(
-        `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          json: {
-            messaging_product: "whatsapp",
-            to: data.to,
-            type: "text",
-            text: { body: message },
+      // First try sending a text message
+      try {
+        const response = await ky.post(
+          `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            json: {
+              messaging_product: "whatsapp",
+              to: toNum,
+              type: "text",
+              text: { body: message },
+            },
+            timeout: 30000,
           },
-          timeout: 30000,
-        },
-      ).json<{ messages: Array<{ id: string }> }>();
+        ).json<{ messages: Array<{ id: string }> }>();
 
-      return {
-        ...context,
-        [data.variableName!]: {
-          messageId: response.messages[0]?.id,
-          to: data.to,
-          message,
-        },
-      };
+        return {
+          ...context,
+          [data.variableName!]: {
+            messageId: response.messages[0]?.id,
+            to: toNum,
+            message,
+          },
+        };
+      } catch (textError: unknown) {
+        // If text message fails (e.g. recipient not a test number), fall back to hello_world template
+        const status = (textError as { response?: { status?: number } })?.response?.status;
+        if (status === 400 || status === 403) {
+          const templateResponse = await ky.post(
+            `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+              json: {
+                messaging_product: "whatsapp",
+                to: toNum,
+                type: "template",
+                template: { name: "hello_world", language: { code: "en_US" } },
+              },
+              timeout: 30000,
+            },
+          ).json<{ messages: Array<{ id: string }> }>();
+
+          return {
+            ...context,
+            [data.variableName!]: {
+              messageId: templateResponse.messages[0]?.id,
+              to: toNum,
+              message: "[hello_world template sent — recipient must be added as test number in Meta Developer Console → WhatsApp → API Setup for text messages]",
+            },
+          };
+        }
+        throw new NonRetriableError(
+          `WhatsApp 400 error: Recipient ${toNum} is not registered as a test recipient. Go to Meta Developer Console → WhatsApp → API Setup → Add recipient number. Original error: ${String(textError)}`
+        );
+      }
     });
 
     await publish(whatsappChannel().status({ nodeId, status: "success" }));

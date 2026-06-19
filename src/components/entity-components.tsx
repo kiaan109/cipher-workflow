@@ -48,27 +48,29 @@ export const EntityHeader = ({
   return (
     <div className="flex flex-row items-center justify-between gap-x-4">
       <div className="flex flex-col">
-        <h1 className="text-lg md:text-xl font-semibold">{title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">{title}</h1>
         {description && (
-          <p className="text-xs md:text-sm text-muted-foreground">
+          <p className="text-sm text-gray-500 mt-1">
             {description}
           </p>
         )}
       </div>
       {onNew && !newButtonHref && (
-        <Button 
-          disabled={isCreating || disabled} 
-          size="sm" 
+        <Button
+          disabled={isCreating || disabled}
+          size="sm"
           onClick={onNew}
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
         >
           <PlusIcon className="size-4" />
           {newButtonLabel}
         </Button>
       )}
       {newButtonHref && !onNew && (
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           asChild
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
         >
           <Link href={newButtonHref} prefetch>
             <PlusIcon className="size-4" />
@@ -94,8 +96,8 @@ export const EntityContainer = ({
   pagination,
 }: EntityContainerProps) => {
   return (
-    <div className="p-4 md:px-10 md:py-6 h-full">
-      <div className="mx-auto max-w-screen-xl w-full flex flex-col gap-y-8 h-full">
+    <div className="p-6 md:px-10 md:py-8 h-full">
+      <div className="mx-auto max-w-screen-xl w-full flex flex-col gap-y-6 h-full">
         {header}
         <div className="flex flex-col gap-y-4 h-full">
           {search}
@@ -215,7 +217,7 @@ export const EmptyView = ({
   onNew
 }: EmptyViewProps) => {
   return (
-    <Empty className="border border-dashed border-border bg-card">
+    <Empty className="border border-dashed border-gray-200 bg-white rounded-xl">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <PackageOpenIcon />
@@ -231,8 +233,8 @@ export const EmptyView = ({
       )}
       {!!onNew && (
         <EmptyContent>
-          <Button onClick={onNew}>
-            Add item
+          <Button onClick={onNew} className="bg-blue-600 hover:bg-blue-700 text-white">
+            Get started
           </Button>
         </EmptyContent>
       )}
@@ -315,7 +317,7 @@ export const EntityItem = ({
     <Link href={href} prefetch>
       <Card
         className={cn(
-          "p-4 shadow-none hover:shadow cursor-pointer",
+          "p-4 shadow-none border border-gray-100 hover:border-gray-200 hover:shadow-sm cursor-pointer bg-white transition-all duration-150",
           isRemoving && "opacity-50 cursor-not-allowed",
           className,
         )}

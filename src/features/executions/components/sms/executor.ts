@@ -50,10 +50,18 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 
   const body = decode(Handlebars.compile(data.body)(context));
 
+  // Ensure phone numbers have + prefix for Twilio (E.164 format)
+  const normalizeTwilioNumber = (num: string) => {
+    const digits = num.replace(/\D/g, "");
+    return num.trim().startsWith("+") ? `+${digits}` : `+${digits}`;
+  };
+  const toNum = normalizeTwilioNumber(data.to!);
+  const fromNum = normalizeTwilioNumber(from);
+
   try {
     const result = await step.run("sms-send", async () => {
       const credentials = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
-      const params = new URLSearchParams({ To: data.to!, From: from, Body: body });
+      const params = new URLSearchParams({ To: toNum, From: fromNum, Body: body });
 
       const response = await ky.post(
         `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
@@ -69,7 +77,7 @@ export const smsExecutor: NodeExecutor<SmsData> = async ({
 
       return {
         ...context,
-        [data.variableName!]: { messageSid: response.sid, status: response.status, to: data.to, body },
+        [data.variableName!]: { messageSid: response.sid, status: response.status, to: toNum, body },
       };
     });
 

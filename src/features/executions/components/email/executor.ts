@@ -61,6 +61,7 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
           from: fromEmail,
           to: [data.to],
           subject,
+          html: `<p>${body.replace(/\n/g, "<br/>")}</p>`,
           text: body,
         },
       });
