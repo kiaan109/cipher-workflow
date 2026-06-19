@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import BlurText from './BlurText';
 import NodeCanvas from './NodeCanvas';
 
 const fadeUp = (delay: number) => ({
@@ -109,8 +108,19 @@ export default function HeroSection() {
           Multi-Agent Software Development
         </motion.p>
 
-        <BlurText text="Build AI Agent Workflows Visually" className="font-heading" delay={0.32} center />
-        <style>{`.font-heading span { font-family:'Instrument Serif',serif; font-style:italic; font-size:clamp(2.8rem,8vw,6.5rem); color:#111827; line-height:0.88; letter-spacing:-0.04em; }`}</style>
+        <motion.h1
+          {...fadeUp(0.32)}
+          className="font-heading"
+          style={{
+            fontSize: 'clamp(2.8rem,8vw,6.5rem)',
+            color: '#111827',
+            lineHeight: 0.88,
+            letterSpacing: '-0.04em',
+            maxWidth: '12ch',
+          }}
+        >
+          Build AI Agent Workflows Visually
+        </motion.h1>
 
         <motion.p
           {...fadeUp(0.7)}
