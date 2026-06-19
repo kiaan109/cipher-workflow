@@ -17,3 +17,9 @@ export async function fetchTelegramToken(): Promise<TelegramToken> {
 
   return token;
 };
+
+export async function fetchTelegramCredentials() {
+  return {
+    botToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  };
+}

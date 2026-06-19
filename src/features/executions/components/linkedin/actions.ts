@@ -17,3 +17,10 @@ export async function fetchLinkedinToken(): Promise<LinkedinToken> {
 
   return token;
 };
+
+export async function fetchLinkedinCredentials() {
+  return {
+    accessToken: process.env.LINKEDIN_ACCESS_TOKEN ?? "",
+    personUrn: process.env.LINKEDIN_PERSON_URN ?? "",
+  };
+}

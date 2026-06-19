@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { TelegramDialog, TelegramFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchTelegramToken } from "./actions";
+import { fetchTelegramToken, fetchTelegramCredentials } from "./actions";
 import { TELEGRAM_CHANNEL_NAME } from "@/inngest/channels/telegram";
 
 type TelegramNodeData = Record<string, string | undefined>;
@@ -14,6 +14,17 @@ type TelegramNodeType = Node<TelegramNodeData>;
 export const TelegramNode = memo((props: NodeProps<TelegramNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
+
+  useEffect(() => {
+    fetchTelegramCredentials().then((creds) => {
+      if (creds.botToken) {
+        setNodes((nodes) => nodes.map((n) =>
+          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
+        ));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
