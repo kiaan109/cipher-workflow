@@ -4,10 +4,18 @@ import { useEffect, useRef } from 'react';
 
 export default function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const enabledRef = useRef(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const coarsePointer = window.matchMedia('(pointer: coarse)');
+    if (reducedMotion.matches || coarsePointer.matches || window.innerWidth < 900) {
+      enabledRef.current = false;
+      return;
+    }
+    enabledRef.current = true;
     const ctx = canvas.getContext('2d')!;
 
     const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
@@ -29,6 +37,7 @@ export default function ParticleCanvas() {
 
     let t = 0, raf: number;
     const draw = () => {
+      if (!enabledRef.current) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       t++;
       for (const p of pts) {
@@ -43,13 +52,18 @@ export default function ParticleCanvas() {
       raf = requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+    return () => {
+      enabledRef.current = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
   }, []);
 
   return (
     <canvas ref={canvasRef} style={{
       position: 'fixed', inset: 0, width: '100%', height: '100%',
       pointerEvents: 'none', zIndex: 0,
+      opacity: 0.85,
     }} />
   );
 }

@@ -22,13 +22,13 @@ export default function LandingNavbar() {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         width: '100%', maxWidth: '80rem',
-        background: scrolled ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.01)',
+        background: scrolled ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.74)',
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: '1px solid rgba(15,23,42,0.08)',
         borderRadius: 9999, padding: '0.5rem 0.5rem 0.5rem 1rem',
         boxShadow: scrolled
-          ? '0 4px 30px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1)'
-          : 'inset 0 1px 1px rgba(255,255,255,0.08)',
+          ? '0 10px 30px rgba(15,23,42,0.08), inset 0 1px 1px rgba(255,255,255,0.9)'
+          : '0 8px 24px rgba(15,23,42,0.04)',
         transition: 'box-shadow 0.3s, background 0.3s',
         position: 'relative', overflow: 'hidden',
       }}>
@@ -54,7 +54,7 @@ export default function LandingNavbar() {
               <line x1="22" y1="7" x2="2" y2="17" />
             </svg>
           </div>
-          <span className="font-heading" style={{ fontSize: 20, color: '#fff', letterSpacing: '0.05em' }}>CIPHER</span>
+          <span className="font-heading" style={{ fontSize: 20, color: '#111827', letterSpacing: '0.05em' }}>CIPHER</span>
         </Link>
 
         {/* Center links — desktop */}
@@ -67,14 +67,14 @@ export default function LandingNavbar() {
             { label: 'Demo', href: '/demo' },
           ].map(({ label, href }) => (
             <a key={label} href={href} style={{
-              fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.6)',
+              fontSize: 13, fontWeight: 500, color: 'rgba(17,24,39,0.62)',
               background: 'transparent', border: 'none', cursor: 'none',
               padding: '0.45rem 0.875rem', borderRadius: 9999,
               transition: 'color 0.15s, background 0.15s',
               textDecoration: 'none',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#111827'; (e.currentTarget as HTMLElement).style.background = 'rgba(15,23,42,0.04)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(17,24,39,0.62)'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >{label}</a>
           ))}
         </div>
@@ -82,14 +82,14 @@ export default function LandingNavbar() {
         {/* Right CTAs */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <Link href="/login" style={{
-            fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none',
+            fontSize: 13, color: 'rgba(17,24,39,0.55)', textDecoration: 'none',
             padding: '0.45rem 0.875rem',
           }}>Sign in</Link>
           <Link href="/signup" style={{
             fontSize: 13, fontWeight: 600, color: '#fff', textDecoration: 'none',
             padding: '0.6rem 1.25rem', borderRadius: 9999,
             background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
-            boxShadow: '0 0 20px rgba(59,130,246,0.35)',
+            boxShadow: '0 0 20px rgba(59,130,246,0.25)',
             whiteSpace: 'nowrap', transition: 'transform 0.15s, box-shadow 0.15s',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; }}

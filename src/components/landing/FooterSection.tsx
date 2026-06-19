@@ -63,6 +63,7 @@ export default function FooterSection() {
           <Link
             href="https://github.com/kiaan109/cipher-workflow"
             target="_blank"
+            rel="noreferrer"
             className="liquid-glass"
             style={{
               display: 'inline-flex',
@@ -137,18 +138,25 @@ export default function FooterSection() {
           </span>
         </div>
         <p style={{ fontSize: 12, color: 'rgba(17,24,39,0.45)' }}>
-          © 2026 Cipher by Runtime Error. Built for the Band of Agents hackathon.
+          © 2026 Cipher AI. Built for the Band of Agents hackathon.
         </p>
         <div style={{ display: 'flex', gap: 20 }}>
-          {['Track 2', 'Workflow', 'GitHub', 'Demo'].map(l => (
+          {[
+            { label: 'Track 2', href: '#how-it-works' },
+            { label: 'Workflow', href: '#features' },
+            { label: 'GitHub', href: 'https://github.com/kiaan109/cipher-workflow' },
+            { label: 'Demo', href: '/demo' },
+          ].map((link) => (
             <a
-              key={l}
-              href="#"
+              key={link.label}
+              href={link.href}
+              target={link.href.startsWith('http') ? '_blank' : undefined}
+              rel={link.href.startsWith('http') ? 'noreferrer' : undefined}
               style={{ fontSize: 12, color: 'rgba(17,24,39,0.55)', textDecoration: 'none', transition: 'color 0.15s' }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#111827'}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(17,24,39,0.55)'}
             >
-              {l}
+              {link.label}
             </a>
           ))}
         </div>

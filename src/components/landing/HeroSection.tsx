@@ -246,9 +246,9 @@ export default function HeroSection() {
           }}
         >
           {[
-            { n: '1,431+', l: 'Integrations' },
-            { n: '∞', l: 'Agent Nodes' },
-            { n: 'Real-Time', l: 'Band Coordination', small: true },
+            { n: 'Live', l: 'Prototype online' },
+            { n: 'Track 2', l: 'Multi-agent software development' },
+            { n: 'Node keys', l: 'Per-task credentialing', small: true },
           ].map(s => (
             <div
               key={s.l}

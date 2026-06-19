@@ -6,8 +6,23 @@ export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [hovering, setHovering] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
+    const finePointer = window.matchMedia('(pointer: fine)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setEnabled(finePointer.matches && !reducedMotion.matches);
+    const update = () => setEnabled(finePointer.matches && !reducedMotion.matches);
+    finePointer.addEventListener?.('change', update);
+    reducedMotion.addEventListener?.('change', update);
+    return () => {
+      finePointer.removeEventListener?.('change', update);
+      reducedMotion.removeEventListener?.('change', update);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
     let mx = 0, my = 0, rx = 0, ry = 0;
     let raf: number;
 
@@ -43,7 +58,9 @@ export default function CustomCursor() {
       document.removeEventListener('mouseover', onOver);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) return null;
 
   return (
     <>

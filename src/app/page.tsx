@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import CustomCursor from '@/components/landing/CustomCursor';
 import LoadingScreen from '@/components/landing/LoadingScreen';
@@ -16,6 +16,11 @@ import FooterSection from '@/components/landing/FooterSection';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fallback = window.setTimeout(() => setIsLoading(false), 5000);
+    return () => window.clearTimeout(fallback);
+  }, []);
 
   return (
     <div className="landing-page" style={{ background: '#fff', minHeight: '100dvh', overflowX: 'hidden' }}>
