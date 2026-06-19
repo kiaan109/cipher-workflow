@@ -109,7 +109,7 @@ export const whatsappExecutor: NodeExecutor<WhatsAppData> = async ({
           };
         }
         throw new NonRetriableError(
-          `WhatsApp 400 error: Recipient ${toNum} is not registered as a test recipient. Go to Meta Developer Console → WhatsApp → API Setup → Add recipient number. Original error: ${String(textError)}`
+          `WhatsApp: +${toNum} is not in your allowed recipients list. Fix: Go to developers.facebook.com → your app → WhatsApp → API Setup → click the "To" dropdown → "Manage phone number list" → add and verify +${toNum} via OTP. This is a one-time setup per number.`
         );
       }
     });
