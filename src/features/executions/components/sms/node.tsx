@@ -16,7 +16,17 @@ export const SmsNode = memo((props: NodeProps<SmsNodeType>) => {
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
 
-  useEffect(() => { fetchSmsCredentials().then(setCredentials); }, []);
+  useEffect(() => {
+    fetchSmsCredentials().then((creds) => {
+      setCredentials(creds);
+      if (creds.accountSid || creds.authToken) {
+        setNodes((nodes) => nodes.map((n) =>
+          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
+        ));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,

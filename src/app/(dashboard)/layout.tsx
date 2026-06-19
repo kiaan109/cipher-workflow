@@ -4,7 +4,7 @@ import { AiAssistant } from "@/components/ai-assistant";
 
 const Layout = ({ children }: { children: React.ReactNode; }) => {
   return (
-    <div className="dark h-full min-h-dvh">
+    <div className="h-full min-h-dvh">
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background">

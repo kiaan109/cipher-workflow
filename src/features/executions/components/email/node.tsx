@@ -16,7 +16,17 @@ export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
 
-  useEffect(() => { fetchEmailCredentials().then(setCredentials); }, []);
+  useEffect(() => {
+    fetchEmailCredentials().then((creds) => {
+      setCredentials(creds);
+      if (creds.apiKey) {
+        setNodes((nodes) => nodes.map((n) =>
+          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
+        ));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,

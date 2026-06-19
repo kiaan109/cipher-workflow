@@ -16,7 +16,17 @@ export const InstagramNode = memo((props: NodeProps<InstagramNodeType>) => {
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
 
-  useEffect(() => { fetchInstagramCredentials().then(setCredentials); }, []);
+  useEffect(() => {
+    fetchInstagramCredentials().then((creds) => {
+      setCredentials(creds);
+      if (creds.accessToken || creds.userId) {
+        setNodes((nodes) => nodes.map((n) =>
+          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
+        ));
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
