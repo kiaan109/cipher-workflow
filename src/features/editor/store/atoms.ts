@@ -10,3 +10,7 @@ export type EditorSetters = {
 };
 
 export const editorSettersAtom = atom<EditorSetters | null>(null);
+
+// Lets node components (which don't receive workflowId as a prop) know which
+// workflow they belong to, e.g. to call the per-node "execute step" endpoint.
+export const workflowIdAtom = atom<string | null>(null);

@@ -6,9 +6,15 @@ import { FlaskConicalIcon, Loader2Icon, ArrowRightIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useEffect } from "react";
 
 function ExecutionStartedModal({ workflowName, executionId, onClose }: { workflowName?: string; executionId: string; onClose: () => void }) {
   const router = useRouter();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => onClose(), 6000);
+    return () => window.clearTimeout(timer);
+  }, [onClose]);
 
   return (
     <Dialog open onOpenChange={open => { if (!open) onClose(); }}>

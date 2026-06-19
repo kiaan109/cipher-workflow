@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MESSAGES = [
-  { id: 1, abbr: 'PL', color: '#3b82f6', name: '@Planner', msg: 'Breaking down the workflow into 8 tasks...', status: 'APPROVED ✓', sc: '#16a34a' },
-  { id: 2, abbr: 'AR', color: '#8b5cf6', name: '@Architect', msg: 'Designing the node graph and message flow...', status: 'APPROVED ✓', sc: '#16a34a' },
+  { id: 1, abbr: 'PL', color: '#3b82f6', name: '@Planner', msg: 'Breaking down the workflow into 8 tasks...', status: 'APPROVED', sc: '#16a34a' },
+  { id: 2, abbr: 'AR', color: '#8b5cf6', name: '@Architect', msg: 'Designing the node graph and message flow...', status: 'APPROVED', sc: '#16a34a' },
   { id: 3, abbr: 'EN', color: '#f97316', name: '@Engineer', msg: 'Prototype is live. Pushing the final polish...', status: null, sc: '' },
   { id: 4, abbr: 'RV', color: '#ef4444', name: '@Reviewer', msg: 'One more pass on copy and readability.', status: 'NEEDS_REVISION', sc: '#ef4444' },
-  { id: 5, abbr: 'TS', color: '#10b981', name: '@Tester', msg: 'Prototype checked on desktop and mobile.', status: 'COMPLETE ✓', sc: '#16a34a' },
+  { id: 5, abbr: 'TS', color: '#10b981', name: '@Tester', msg: 'Prototype checked on desktop and mobile.', status: 'COMPLETE', sc: '#16a34a' },
 ];
 
 export default function BandIntegrationSection() {
@@ -17,7 +17,7 @@ export default function BandIntegrationSection() {
   const typingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const t = setInterval(() => {
+    const t = window.setInterval(() => {
       setTyping(true);
       if (typingTimeoutRef.current !== null) {
         window.clearTimeout(typingTimeoutRef.current);
@@ -28,7 +28,7 @@ export default function BandIntegrationSection() {
       }, 1000);
     }, 2200);
     return () => {
-      clearInterval(t);
+      window.clearInterval(t);
       if (typingTimeoutRef.current !== null) {
         window.clearTimeout(typingTimeoutRef.current);
       }
@@ -38,7 +38,7 @@ export default function BandIntegrationSection() {
   const shown = MESSAGES.slice(0, visibleCount);
 
   return (
-    <section style={{ background: '#fff', padding: '7rem 1.5rem', overflow: 'hidden' }}>
+    <section id="band" style={{ background: '#fff', padding: '7rem 1.5rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '4rem', alignItems: 'center' }}>
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -50,7 +50,9 @@ export default function BandIntegrationSection() {
             // Powered by Band.ai
           </p>
           <h2 className="font-heading" style={{ fontSize: 'clamp(2.5rem,6vw,4rem)', color: '#111827', lineHeight: 0.95, letterSpacing: '-0.04em', marginBottom: '1rem' }}>
-            Agents collaborate<br />inside Band
+            Agents collaborate
+            <br />
+            inside Band
           </h2>
 
           {[
@@ -66,12 +68,24 @@ export default function BandIntegrationSection() {
               transition={{ delay: 0.2 + i * 0.12, duration: 0.6 }}
               style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: '0.875rem' }}
             >
-              <span style={{
-                width: 20, height: 20, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 700, color: '#fff',
-              }}>✓</span>
+              <span
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  marginTop: 2,
+                  background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#fff',
+                }}
+              >
+                ✓
+              </span>
               <p style={{ fontSize: 14.5, color: 'rgba(17,24,39,0.68)', lineHeight: 1.65 }}>{text}</p>
             </motion.div>
           ))}
@@ -122,12 +136,24 @@ export default function BandIntegrationSection() {
                     boxShadow: '0 10px 30px rgba(17,24,39,0.04)',
                   }}
                 >
-                  <div style={{
-                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                    background: m.color + '22', border: `1px solid ${m.color}45`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, fontWeight: 700, color: m.color,
-                  }}>{m.abbr}</div>
+                  <div
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      background: m.color + '22',
+                      border: `1px solid ${m.color}45`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: m.color,
+                    }}
+                  >
+                    {m.abbr}
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: '#111827', marginBottom: 3 }}>{m.name}</p>
                     <p style={{ fontSize: 12, color: 'rgba(17,24,39,0.66)', lineHeight: 1.5 }}>{m.msg}</p>

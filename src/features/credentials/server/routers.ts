@@ -38,11 +38,11 @@ export const credentialsRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(
-      z.object({ 
-        id: z.string(), 
+      z.object({
+        id: z.string(),
         name: z.string().min(1, "Name is required"),
         type: z.enum(CredentialType),
-        value: z.string().min(1, "Value is required"),
+        value: z.string().optional(),
       }),
     )
     .mutation(({ ctx, input }) => {
@@ -53,16 +53,18 @@ export const credentialsRouter = createTRPCRouter({
         data: {
           name,
           type,
-          value: encrypt(value),
+          ...(value ? { value: encrypt(value) } : {}),
         }
       });
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return prisma.credential.findUniqueOrThrow({
+    .query(async ({ ctx, input }) => {
+      const credential = await prisma.credential.findUniqueOrThrow({
         where: { id: input.id, userId: ctx.auth.user.id },
       });
+
+      return { ...credential, value: "" };
     }),
   getMany: protectedProcedure
     .input(

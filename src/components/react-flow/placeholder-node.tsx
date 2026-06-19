@@ -24,12 +24,14 @@ export const PlaceholderNode = forwardRef<HTMLDivElement, PlaceholderNodeProps>(
       >
         {children}
         <Handle
+          id="target-1"
           type="target"
           style={{ visibility: "hidden" }}
           position={Position.Top}
           isConnectable={false}
         />
         <Handle
+          id="source-1"
           type="source"
           style={{ visibility: "hidden" }}
           position={Position.Bottom}

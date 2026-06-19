@@ -196,7 +196,7 @@ export default function HeroSection() {
                 fontSize: 15,
                 fontWeight: 700,
                 color: '#111827',
-                cursor: 'none',
+                cursor: 'pointer',
                 transition: 'transform 0.2s',
               }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.03)'}
@@ -215,7 +215,7 @@ export default function HeroSection() {
                 fontWeight: 600,
                 color: 'rgba(17,24,39,0.75)',
                 background: 'transparent',
-                cursor: 'none',
+                cursor: 'pointer',
                 transition: 'background 0.2s, color 0.2s',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -246,7 +246,7 @@ export default function HeroSection() {
           }}
         >
           {[
-            { n: 'Live', l: 'Prototype online' },
+            { n: 'Online', l: 'Prototype is live' },
             { n: 'Track 2', l: 'Multi-agent software development' },
             { n: 'Node keys', l: 'Per-task credentialing', small: true },
           ].map(s => (

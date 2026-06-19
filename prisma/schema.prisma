@@ -102,13 +102,28 @@ model Workflow {
   name String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   nodes Node[]
   connections Connection[]
   executions Execution[]
+  versions WorkflowVersion[]
 
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WorkflowVersion {
+  id String @id @default(cuid())
+  workflowId String
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  nodes Json
+  connections Json
+
+  createdAt DateTime @default(now())
+
+  @@index([workflowId, createdAt])
 }
 
 enum NodeType {

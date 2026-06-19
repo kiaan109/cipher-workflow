@@ -1,9 +1,10 @@
 "use client";
 
 import { NodeToolbar, Position } from "@xyflow/react";
-import { SettingsIcon, TrashIcon } from "lucide-react";
+import { Loader2Icon, PlayIcon, RepeatIcon, SettingsIcon, TrashIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 interface WorkflowNodeProps {
   children: ReactNode;
@@ -12,6 +13,10 @@ interface WorkflowNodeProps {
   onSettings?: () => void;
   name?: string;
   description?: string;
+  onExecuteStep?: () => void;
+  isExecutingStep?: boolean;
+  retryOnFail?: boolean;
+  onToggleRetry?: () => void;
 };
 
 export function WorkflowNode({
@@ -21,11 +26,31 @@ export function WorkflowNode({
   onSettings,
   name,
   description,
+  onExecuteStep,
+  isExecutingStep,
+  retryOnFail,
+  onToggleRetry,
 }: WorkflowNodeProps) {
   return (
     <>
       {showToolbar && (
         <NodeToolbar>
+          {onExecuteStep && (
+            <Button size="sm" variant="ghost" onClick={onExecuteStep} disabled={isExecutingStep} title="Execute step">
+              {isExecutingStep ? <Loader2Icon className="size-4 animate-spin" /> : <PlayIcon className="size-4" />}
+            </Button>
+          )}
+          {onToggleRetry && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onToggleRetry}
+              title={retryOnFail ? "Retry on fail: enabled" : "Retry on fail: disabled"}
+              className={cn(retryOnFail && "text-emerald-600")}
+            >
+              <RepeatIcon className="size-4" />
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={onSettings}>
             <SettingsIcon className="size-4" />
           </Button>

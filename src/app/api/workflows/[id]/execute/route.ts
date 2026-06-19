@@ -14,6 +14,10 @@ function getRunnerUrl() {
   return `${appUrl}/api/run-workflow`;
 }
 
+function hasRunnableWorkflow(nodes: { type: string }[]) {
+  return nodes.some((node) => node.type !== "INITIAL");
+}
+
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -23,8 +27,15 @@ export async function POST(
 
   const workflow = await prisma.workflow.findUniqueOrThrow({
     where: { id: workflowId, userId: session.user.id },
-    select: { name: true },
+    select: { name: true, nodes: { select: { type: true } } },
   });
+
+  if (!hasRunnableWorkflow(workflow.nodes)) {
+    return Response.json(
+      { error: "Add at least one real node before executing this workflow." },
+      { status: 400 },
+    );
+  }
 
   // Pre-create execution record so the frontend can navigate immediately
   const executionId = createId();

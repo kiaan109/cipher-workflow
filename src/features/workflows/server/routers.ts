@@ -14,13 +14,22 @@ function getRunnerUrl() {
   return `${appUrl}/api/run-workflow`;
 }
 
+function hasRunnableWorkflow(nodes: { type: NodeType }[]) {
+  return nodes.some((node) => node.type !== NodeType.INITIAL);
+}
+
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: input.id, userId: ctx.auth.user.id },
+        include: { nodes: { select: { type: true } } },
       });
+
+      if (!hasRunnableWorkflow(workflow.nodes)) {
+        throw new Error("Add at least one real node before executing this workflow.");
+      }
 
       const executionId = createId();
       const execution = await prisma.execution.create({
@@ -64,9 +73,68 @@ export const workflowsRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {
-      return prisma.workflow.delete({
-        where: { id: input.id, userId: ctx.auth.user.id },
+      // Soft delete — moves the workflow to trash instead of destroying it,
+      // so accidental deletes are recoverable.
+      return prisma.workflow.update({
+        where: { id: input.id, userId: ctx.auth.user.id, deletedAt: null },
+        data: { deletedAt: new Date() },
       });
+    }),
+
+  restore: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return prisma.workflow.update({
+        where: { id: input.id, userId: ctx.auth.user.id },
+        data: { deletedAt: null },
+      });
+    }),
+
+  permanentlyDelete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(({ ctx, input }) => {
+      return prisma.workflow.delete({
+        where: { id: input.id, userId: ctx.auth.user.id, deletedAt: { not: null } },
+      });
+    }),
+
+  listTrash: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().default(PAGINATION.DEFAULT_PAGE),
+        pageSize: z
+          .number()
+          .min(PAGINATION.MIN_PAGE_SIZE)
+          .max(PAGINATION.MAX_PAGE_SIZE)
+          .default(PAGINATION.DEFAULT_PAGE_SIZE),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, pageSize } = input;
+
+      const [items, totalCount] = await Promise.all([
+        prisma.workflow.findMany({
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          where: { userId: ctx.auth.user.id, deletedAt: { not: null } },
+          orderBy: { deletedAt: "desc" },
+        }),
+        prisma.workflow.count({
+          where: { userId: ctx.auth.user.id, deletedAt: { not: null } },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      return {
+        items,
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      };
     }),
 
   update: protectedProcedure
@@ -96,9 +164,34 @@ export const workflowsRouter = createTRPCRouter({
 
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id, userId: ctx.auth.user.id },
+        include: { nodes: true, connections: true },
       });
 
-      return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
+        // Snapshot the current state as a version before overwriting it,
+        // so previous saves stay recoverable.
+        if (workflow.nodes.length > 0) {
+          await tx.workflowVersion.create({
+            data: {
+              workflowId: id,
+              nodes: workflow.nodes,
+              connections: workflow.connections,
+            },
+          });
+
+          const staleVersions = await tx.workflowVersion.findMany({
+            where: { workflowId: id },
+            orderBy: { createdAt: "desc" },
+            skip: 20,
+            select: { id: true },
+          });
+          if (staleVersions.length > 0) {
+            await tx.workflowVersion.deleteMany({
+              where: { id: { in: staleVersions.map((v) => v.id) } },
+            });
+          }
+        }
+
         await tx.node.deleteMany({ where: { workflowId: id } });
 
         await tx.node.createMany({
@@ -131,6 +224,81 @@ export const workflowsRouter = createTRPCRouter({
       });
     }),
 
+  listVersions: protectedProcedure
+    .input(z.object({ workflowId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      await prisma.workflow.findUniqueOrThrow({
+        where: { id: input.workflowId, userId: ctx.auth.user.id },
+      });
+
+      return prisma.workflowVersion.findMany({
+        where: { workflowId: input.workflowId },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, createdAt: true, nodes: true, connections: true },
+      });
+    }),
+
+  restoreVersion: protectedProcedure
+    .input(z.object({ workflowId: z.string(), versionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: { id: input.workflowId, userId: ctx.auth.user.id },
+        include: { nodes: true, connections: true },
+      });
+
+      const version = await prisma.workflowVersion.findUniqueOrThrow({
+        where: { id: input.versionId, workflowId: input.workflowId },
+      });
+
+      const versionNodes = version.nodes as unknown as Array<{
+        id: string; type: NodeType; position: unknown; data: unknown;
+      }>;
+      const versionConnections = version.connections as unknown as Array<{
+        fromNodeId: string; toNodeId: string; fromOutput: string; toInput: string;
+      }>;
+
+      return prisma.$transaction(async (tx) => {
+        // Snapshot current state first so restoring is itself reversible.
+        await tx.workflowVersion.create({
+          data: {
+            workflowId: input.workflowId,
+            nodes: workflow.nodes,
+            connections: workflow.connections,
+          },
+        });
+
+        await tx.node.deleteMany({ where: { workflowId: input.workflowId } });
+
+        await tx.node.createMany({
+          data: versionNodes.map((node) => ({
+            id: node.id,
+            workflowId: input.workflowId,
+            name: node.type || "unknown",
+            type: node.type,
+            position: node.position as object,
+            data: (node.data as object) || {},
+          })),
+        });
+
+        await tx.connection.createMany({
+          data: versionConnections.map((conn) => ({
+            workflowId: input.workflowId,
+            fromNodeId: conn.fromNodeId,
+            toNodeId: conn.toNodeId,
+            fromOutput: conn.fromOutput,
+            toInput: conn.toInput,
+          })),
+        });
+
+        await tx.workflow.update({
+          where: { id: input.workflowId },
+          data: { updatedAt: new Date() },
+        });
+
+        return { id: input.workflowId };
+      });
+    }),
+
   updateName: protectedProcedure
     .input(z.object({ id: z.string(), name: z.string().min(1) }))
     .mutation(({ ctx, input }) => {
@@ -144,7 +312,7 @@ export const workflowsRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
-        where: { id: input.id, userId: ctx.auth.user.id },
+        where: { id: input.id, userId: ctx.auth.user.id, deletedAt: null },
         include: { nodes: true, connections: true },
       });
 
@@ -187,6 +355,7 @@ export const workflowsRouter = createTRPCRouter({
           take: pageSize,
           where: {
             userId: ctx.auth.user.id,
+            deletedAt: null,
             name: { contains: search, mode: "insensitive" },
           },
           orderBy: { updatedAt: "desc" },
@@ -194,6 +363,7 @@ export const workflowsRouter = createTRPCRouter({
         prisma.workflow.count({
           where: {
             userId: ctx.auth.user.id,
+            deletedAt: null,
             name: { contains: search, mode: "insensitive" },
           },
         }),

@@ -3,7 +3,15 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
-const MARQUEE_TEXT = ' BAND OF AGENTS · MULTI-AGENT SOFTWARE DEVELOPMENT · WORKING ONLINE PROTOTYPE · VIDEO PRESENTATION · PITCH DECK · ';
+const MARQUEE_TEXT =
+  ' BAND OF AGENTS · MULTI-AGENT SOFTWARE DEVELOPMENT · WORKING ONLINE PROTOTYPE · VIDEO PRESENTATION · PITCH DECK · ';
+
+const scrollToSection = (id: string) => {
+  if (typeof document === 'undefined') return;
+  const element = document.getElementById(id);
+  if (!element) return;
+  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 
 export default function FooterSection() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -54,7 +62,7 @@ export default function FooterSection() {
                 fontSize: 15,
                 fontWeight: 700,
                 color: '#fff',
-                cursor: 'none',
+                cursor: 'pointer',
               }}
             >
               Start Building Free →
@@ -140,25 +148,38 @@ export default function FooterSection() {
         <p style={{ fontSize: 12, color: 'rgba(17,24,39,0.45)' }}>
           © 2026 Cipher AI. Built for the Band of Agents hackathon.
         </p>
-        <div style={{ display: 'flex', gap: 20 }}>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
           {[
-            { label: 'Track 2', href: '#how-it-works' },
-            { label: 'Workflow', href: '#features' },
+            { label: 'Track 2', target: 'how-it-works' },
+            { label: 'Band', target: 'band' },
             { label: 'GitHub', href: 'https://github.com/kiaan109/cipher-workflow' },
             { label: 'Demo', href: '/demo' },
-          ].map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              target={link.href.startsWith('http') ? '_blank' : undefined}
-              rel={link.href.startsWith('http') ? 'noreferrer' : undefined}
-              style={{ fontSize: 12, color: 'rgba(17,24,39,0.55)', textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#111827'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(17,24,39,0.55)'}
-            >
-              {link.label}
-            </a>
-          ))}
+          ].map((link) =>
+            link.target ? (
+              <button
+                key={link.label}
+                type="button"
+                style={{ fontSize: 12, color: 'rgba(17,24,39,0.55)', textDecoration: 'none', transition: 'color 0.15s', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+                onClick={() => scrollToSection(link.target)}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#111827'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(17,24,39,0.55)'}
+              >
+                {link.label}
+              </button>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.href?.startsWith('http') ? '_blank' : undefined}
+                rel={link.href?.startsWith('http') ? 'noreferrer' : undefined}
+                style={{ fontSize: 12, color: 'rgba(17,24,39,0.55)', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#111827'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'rgba(17,24,39,0.55)'}
+              >
+                {link.label}
+              </a>
+            ),
+          )}
         </div>
       </div>
     </footer>

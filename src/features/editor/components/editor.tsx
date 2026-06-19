@@ -16,6 +16,8 @@ import {
   MiniMap,
   Panel,
 } from '@xyflow/react';
+import { Button } from '@/components/ui/button';
+import { RotateCcwIcon } from 'lucide-react';
 import { ErrorView, LoadingView } from "@/components/entity-components";
 import { useSuspenseWorkflow, useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
 
@@ -23,7 +25,7 @@ import '@xyflow/react/dist/style.css';
 import { nodeComponents } from '@/config/node-components';
 import { AddNodeButton } from './add-node-button';
 import { useSetAtom } from 'jotai';
-import { editorAtom, editorSettersAtom } from '../store/atoms';
+import { editorAtom, editorSettersAtom, workflowIdAtom } from '../store/atoms';
 import { NodeType } from '@/generated/prisma';
 import { ExecuteWorkflowButton } from './execute-workflow-button';
 
@@ -42,9 +44,12 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
 
   const setEditor = useSetAtom(editorAtom);
   const setEditorSetters = useSetAtom(editorSettersAtom);
+  const setWorkflowId = useSetAtom(workflowIdAtom);
   const saveWorkflow = useUpdateWorkflow();
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+  const initialNodesRef = useRef<Node[]>(workflow.nodes);
+  const initialEdgesRef = useRef<Edge[]>(workflow.edges);
 
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
@@ -54,6 +59,11 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
     setEditorSetters({ setNodes, setEdges });
     return () => setEditorSetters(null);
   }, [setEditorSetters, setNodes, setEdges]);
+
+  useEffect(() => {
+    setWorkflowId(workflowId);
+    return () => setWorkflowId(null);
+  }, [setWorkflowId, workflowId]);
 
   const triggerAutoSave = useCallback((currentNodes: Node[], currentEdges: Edge[]) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
@@ -83,6 +93,15 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
     [],
   );
 
+  const handleReset = useCallback(() => {
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+      autoSaveTimer.current = null;
+    }
+    setNodes(initialNodesRef.current);
+    setEdges(initialEdgesRef.current);
+  }, []);
+
   const hasManualTrigger = useMemo(() => {
     return nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER || node.type === NodeType.INITIAL);
   }, [nodes]);
@@ -109,6 +128,17 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         <MiniMap />
         <Panel position="top-right">
           <AddNodeButton />
+        </Panel>
+        <Panel position="top-left">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleReset}
+            className="gap-2 border-white/70 bg-white/90 shadow-sm backdrop-blur-md"
+          >
+            <RotateCcwIcon className="size-4" />
+            Reset workflow
+          </Button>
         </Panel>
         {hasManualTrigger && (
           <Panel position="bottom-center">

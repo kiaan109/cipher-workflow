@@ -40,7 +40,7 @@ import Link from "next/link";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.enum(CredentialType),
-  value: z.string().min(1, "API key is required"),
+  value: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -82,9 +82,9 @@ export const CredentialForm = ({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      name: "",
-      type: CredentialType.OPENAI,
+    defaultValues: {
+      name: initialData?.name ?? "",
+      type: initialData?.type ?? CredentialType.OPENAI,
       value: "",
     },
   });
@@ -93,9 +93,15 @@ export const CredentialForm = ({
     if (isEdit && initialData?.id) {
       await updateCredential.mutateAsync({
         id: initialData.id,
-        ...values,
+        name: values.name,
+        type: values.type,
+        value: values.value || undefined,
       })
     } else {
+      if (!values.value) {
+        form.setError("value", { message: "API key is required" });
+        return;
+      }
       await createCredential.mutateAsync(values, {
         onSuccess: (data) => {
           router.push(`/credentials/${data.id}`);
@@ -179,12 +185,17 @@ export const CredentialForm = ({
                     <FormItem>
                       <FormLabel>API Key</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="sk-..."
+                        <Input
+                          type="password"
+                          placeholder={isEdit ? "•••••••• (unchanged)" : ""}
                           {...field}
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        {isEdit
+                          ? "Leave this blank to keep your existing key. Enter a new value to replace it."
+                          : "Leave this blank until you have the key ready. We only store what you enter."}
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}

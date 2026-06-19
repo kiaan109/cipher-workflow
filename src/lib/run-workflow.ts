@@ -80,21 +80,31 @@ export async function runWorkflow({
       const levelResults = await Promise.all(
         level.map(async node => {
           const executor = getExecutor(node.type as NodeType);
-          try {
-            const result = await executor({
-              data: node.data as Record<string, unknown>,
-              nodeId: node.id,
-              userId,
-              context,
-              step: stepShim,
-              publish: publishShim,
-              bandRoomId,
-            });
-            const varName = (node.data as Record<string, unknown>)?.variableName as string | undefined;
-            return { ok: true as const, node, result, varName };
-          } catch (err) {
-            return { ok: false as const, node, error: err instanceof Error ? err.message : String(err) };
+          const nodeData = node.data as Record<string, unknown>;
+          const maxAttempts = nodeData?.retryOnFail
+            ? Math.max(1, Number(nodeData?.maxRetries) || 3)
+            : 1;
+
+          let lastError: unknown;
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+              const result = await executor({
+                data: nodeData,
+                nodeId: node.id,
+                userId,
+                context,
+                step: stepShim,
+                publish: publishShim,
+                bandRoomId,
+              });
+              const varName = nodeData?.variableName as string | undefined;
+              return { ok: true as const, node, result, varName };
+            } catch (err) {
+              lastError = err;
+              if (attempt < maxAttempts) continue;
+            }
           }
+          return { ok: false as const, node, error: lastError instanceof Error ? lastError.message : String(lastError) };
         }),
       );
 

@@ -12,13 +12,22 @@ import {
   ErrorView,
   LoadingView
 } from "@/components/entity-components";
-import { useCreateWorkflow, useRemoveWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows"
+import {
+  useCreateWorkflow,
+  usePermanentlyDeleteWorkflow,
+  useRemoveWorkflow,
+  useRestoreWorkflow,
+  useSuspenseWorkflows,
+  useTrashedWorkflows,
+} from "../hooks/use-workflows"
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { useRouter } from "next/navigation";
 import { useWorkflowsParams } from "../hooks/use-workflows-params";
 import { useEntitySearch } from "@/hooks/use-entity-search";
 import type { Workflow } from "@/generated/prisma";
-import { WorkflowIcon } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Trash2Icon, WorkflowIcon } from "lucide-react";
 
 export const WorkflowsSearch = () => {
   const [params, setParams] = useWorkflowsParams();
@@ -68,14 +77,22 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
   return (
     <>
       {modal}
-      <EntityHeader
-        title="Workflows"
-        description="Create and manage your workflows"
-        onNew={handleCreate}
-        newButtonLabel="New workflow"
-        disabled={disabled}
-        isCreating={createWorkflow.isPending}
-      />
+      <div className="flex items-center justify-between gap-x-4">
+        <EntityHeader
+          title="Workflows"
+          description="Create and manage your workflows"
+          onNew={handleCreate}
+          newButtonLabel="New workflow"
+          disabled={disabled}
+          isCreating={createWorkflow.isPending}
+        />
+        <Button size="sm" variant="ghost" asChild>
+          <Link href="/workflows/trash" prefetch>
+            <Trash2Icon className="size-4" />
+            Trash
+          </Link>
+        </Button>
+      </div>
     </>
   );
 };
@@ -153,6 +170,10 @@ export const WorkflowItem = ({
   const removeWorkflow = useRemoveWorkflow();
 
   const handleRemove = () => {
+    const confirmed = window.confirm(
+      `Delete workflow "${data.name}"? You can restore it from Trash afterward.`,
+    );
+    if (!confirmed) return;
     removeWorkflow.mutate({ id: data.id });
   }
 
@@ -177,3 +198,78 @@ export const WorkflowItem = ({
     />
   )
 }
+
+export const TrashHeader = () => {
+  return (
+    <EntityHeader
+      title="Trash"
+      description="Deleted workflows are kept here until restored or permanently deleted"
+    />
+  );
+};
+
+export const TrashList = () => {
+  const { data, isLoading } = useTrashedWorkflows();
+
+  if (isLoading) {
+    return <WorkflowsLoading />;
+  }
+
+  return (
+    <EntityList
+      items={data?.items ?? []}
+      getKey={(workflow) => workflow.id}
+      renderItem={(workflow) => <TrashItem data={workflow} />}
+      emptyView={<EmptyView message="Trash is empty" />}
+    />
+  );
+};
+
+const TrashItem = ({ data }: { data: Workflow }) => {
+  const restoreWorkflow = useRestoreWorkflow();
+  const permanentlyDelete = usePermanentlyDeleteWorkflow();
+
+  const handlePermanentDelete = () => {
+    const confirmed = window.confirm(
+      `Permanently delete "${data.name}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+    permanentlyDelete.mutate({ id: data.id });
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl glass-card p-4">
+      <div className="flex items-center gap-3">
+        <div className="size-8 flex items-center justify-center">
+          <WorkflowIcon className="size-5 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-base font-medium">{data.name}</p>
+          <p className="text-xs text-muted-foreground">
+            Deleted {data.deletedAt ? formatDistanceToNow(data.deletedAt, { addSuffix: true }) : ""}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={restoreWorkflow.isPending}
+          onClick={() => restoreWorkflow.mutate({ id: data.id })}
+        >
+          Restore
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="text-destructive hover:text-destructive"
+          disabled={permanentlyDelete.isPending}
+          onClick={handlePermanentDelete}
+        >
+          <Trash2Icon className="size-4" />
+          Delete forever
+        </Button>
+      </div>
+    </div>
+  );
+};
