@@ -12,7 +12,7 @@ const STEPS = [
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" style={{ background: '#000', padding: '7rem 1.5rem', overflow: 'hidden' }}>
+    <section id="how-it-works" style={{ background: '#fff', padding: '7rem 1.5rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         {/* Header */}
         <motion.div
@@ -22,10 +22,10 @@ export default function HowItWorksSection() {
           transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
           style={{ textAlign: 'center', marginBottom: '4rem' }}
         >
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+          <p style={{ fontSize: 11, color: 'rgba(17,24,39,0.45)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '1rem' }}>
             // How Cipher Works
           </p>
-          <h2 className="font-heading" style={{ fontSize: 'clamp(2.5rem,7vw,5rem)', color: '#fff', lineHeight: 0.95, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
+          <h2 className="font-heading" style={{ fontSize: 'clamp(2.5rem,7vw,5rem)', color: '#111827', lineHeight: 0.95, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
             From idea to running AI team
           </h2>
           <p className="font-heading accent-gradient-text" style={{ fontSize: 'clamp(1.5rem,4vw,2.5rem)', letterSpacing: '-0.02em' }}>
@@ -56,8 +56,8 @@ export default function HowItWorksSection() {
               }}>
                 <p className="font-heading accent-gradient-text" style={{ fontSize: '2.25rem', lineHeight: 1, marginBottom: '0.75rem' }}>{step.n}</p>
                 <span style={{ fontSize: '1.75rem', marginBottom: '0.75rem', display: 'block' }}>{step.emoji}</span>
-                <p style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 6 }}>{step.title}</p>
-                <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, flexGrow: 1 }}>{step.desc}</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#111827', marginBottom: 6 }}>{step.title}</p>
+                <p style={{ fontSize: 12.5, color: 'rgba(17,24,39,0.58)', lineHeight: 1.6, flexGrow: 1 }}>{step.desc}</p>
               </div>
 
               {/* Connector */}
@@ -66,7 +66,7 @@ export default function HowItWorksSection() {
                   position: 'absolute', right: -12, top: '50%', transform: 'translateY(-50%)',
                   zIndex: 10, width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <div style={{ width: 20, height: 1, background: 'linear-gradient(90deg,rgba(59,130,246,0.5),rgba(139,92,246,0.5))', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ width: 20, height: 1, background: 'linear-gradient(90deg,rgba(59,130,246,0.35),rgba(139,92,246,0.35))', position: 'relative', overflow: 'hidden' }}>
                     <div className="lp-marquee accent-gradient" style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%' }} />
                   </div>
                 </div>
