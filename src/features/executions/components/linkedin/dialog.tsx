@@ -15,6 +15,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  accessToken: z.string().min(1, "Access token is required"),
+  personUrn: z.string().min(1, "Person URN is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   text: z.string().min(1, "Post text is required"),
 });
@@ -31,24 +33,30 @@ interface Props {
 export const LinkedinDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<LinkedinFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", text: "", ...defaultValues },
+    defaultValues: { accessToken: "", personUrn: "", variableName: "", text: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", text: "", ...defaultValues });
+    if (open) form.reset({ accessToken: "", personUrn: "", variableName: "", text: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myLinkedin";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>LinkedIn</DialogTitle>
-          <DialogDescription>Post an update to LinkedIn. Platform credentials are pre-configured.</DialogDescription>
+          <DialogDescription>Enter the LinkedIn API details for this node, then configure the post.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem><FormLabel>Access Token</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="AQV..." {...field} /></FormControl><FormDescription>Token with permission to create posts.</FormDescription><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="personUrn" render={({ field }) => (
+              <FormItem><FormLabel>Person URN</FormLabel><FormControl><Input placeholder="urn:li:person:..." {...field} /></FormControl><FormDescription>Your LinkedIn author URN.</FormDescription><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

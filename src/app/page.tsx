@@ -17,7 +17,7 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   return (
-    <div className="landing-page" style={{ background: '#000', minHeight: '100dvh', overflowX: 'hidden' }}>
+    <div className="landing-page" style={{ background: '#fff', minHeight: '100dvh', overflowX: 'hidden' }}>
       <CustomCursor />
 
       <AnimatePresence>

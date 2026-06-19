@@ -15,6 +15,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  accessToken: z.string().min(1, "Access token is required"),
+  phoneNumberId: z.string().min(1, "Phone Number ID is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   to: z.string().min(1, "Recipient phone number is required"),
   message: z.string().min(1, "Message is required"),
@@ -32,11 +34,11 @@ interface Props {
 export const WhatsappDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<WhatsappFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", to: "", message: "", ...defaultValues },
+    defaultValues: { accessToken: "", phoneNumberId: "", variableName: "", to: "", message: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", to: "", message: "", ...defaultValues });
+    if (open) form.reset({ accessToken: "", phoneNumberId: "", variableName: "", to: "", message: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myWhatsapp";
@@ -46,10 +48,19 @@ export const WhatsappDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>WhatsApp</DialogTitle>
-          <DialogDescription>Send a WhatsApp message. Platform credentials are pre-configured.</DialogDescription>
+          <DialogDescription>Enter the WhatsApp Cloud API details for this node, then configure the message.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Find these in Meta Developers → your app → WhatsApp → API Setup.
+            </div>
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem><FormLabel>Access Token</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="EAAB..." {...field} /></FormControl><FormDescription>Used only when this workflow runs.</FormDescription><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="phoneNumberId" render={({ field }) => (
+              <FormItem><FormLabel>Phone Number ID</FormLabel><FormControl><Input placeholder="123456789012345" {...field} /></FormControl><FormDescription>This is the numeric ID, not the visible phone number.</FormDescription><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

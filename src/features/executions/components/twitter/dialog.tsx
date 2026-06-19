@@ -15,6 +15,10 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  apiKey: z.string().min(1, "API key is required"),
+  apiKeySecret: z.string().min(1, "API key secret is required"),
+  accessToken: z.string().min(1, "Access token is required"),
+  accessTokenSecret: z.string().min(1, "Access token secret is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   text: z.string().min(1, "Tweet text is required").max(280, "Tweets cannot exceed 280 characters"),
 });
@@ -31,24 +35,37 @@ interface Props {
 export const TwitterDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<TwitterFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", text: "", ...defaultValues },
+    defaultValues: { apiKey: "", apiKeySecret: "", accessToken: "", accessTokenSecret: "", variableName: "", text: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", text: "", ...defaultValues });
+    if (open) form.reset({ apiKey: "", apiKeySecret: "", accessToken: "", accessTokenSecret: "", variableName: "", text: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myTwitter";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Twitter / X</DialogTitle>
-          <DialogDescription>Post a tweet. Platform credentials are pre-configured.</DialogDescription>
+          <DialogDescription>Enter the X API credentials for this node, then configure the post.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">Create an app with read and write permissions in the X Developer Portal.</div>
+            <FormField control={form.control} name="apiKey" render={({ field }) => (
+              <FormItem><FormLabel>API Key</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="Consumer key" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="apiKeySecret" render={({ field }) => (
+              <FormItem><FormLabel>API Key Secret</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="Consumer secret" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem><FormLabel>Access Token</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="Access token" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="accessTokenSecret" render={({ field }) => (
+              <FormItem><FormLabel>Access Token Secret</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="Access token secret" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

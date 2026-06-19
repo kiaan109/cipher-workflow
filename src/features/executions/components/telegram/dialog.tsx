@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  botToken: z.string().min(1, "Bot token is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   chatId: z.string().min(1, "Chat ID is required"),
   text: z.string().min(1, "Message text is required"),
@@ -32,11 +33,11 @@ interface Props {
 export const TelegramDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<TelegramFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", chatId: "", text: "", ...defaultValues },
+    defaultValues: { botToken: "", variableName: "", chatId: "", text: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", chatId: "", text: "", ...defaultValues });
+    if (open) form.reset({ botToken: "", variableName: "", chatId: "", text: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myTelegram";
@@ -46,10 +47,13 @@ export const TelegramDialog = ({ open, onOpenChange, onSubmit, defaultValues = {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Telegram</DialogTitle>
-          <DialogDescription>Send a Telegram message. Platform bot credentials are pre-configured.</DialogDescription>
+          <DialogDescription>Enter the Telegram bot token for this node, then configure the message.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
+            <FormField control={form.control} name="botToken" render={({ field }) => (
+              <FormItem><FormLabel>Bot Token</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="123456789:AA..." {...field} /></FormControl><FormDescription>Get this from @BotFather in Telegram.</FormDescription><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

@@ -48,7 +48,7 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-gray-100 bg-white">
+      <SidebarHeader className="border-b border-white/60 liquid-glass-strong">
         <SidebarMenuItem>
           <SidebarMenuButton asChild className="gap-x-3 h-12 px-3 hover:bg-transparent">
             <Link href="/" prefetch>
@@ -63,7 +63,7 @@ export const AppSidebar = () => {
         </SidebarMenuItem>
       </SidebarHeader>
 
-      <SidebarContent className="bg-white pt-2">
+      <SidebarContent className="liquid-glass-strong pt-2">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-y-0.5">
@@ -107,7 +107,7 @@ export const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-gray-100 bg-white">
+      <SidebarFooter className="border-t border-white/60 liquid-glass-strong">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { SmsDialog, SmsFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchSmsToken, fetchSmsCredentials } from "./actions";
+import { fetchSmsToken } from "./actions";
 import { SMS_CHANNEL_NAME } from "@/inngest/channels/sms";
 
 type SmsNodeData = Record<string, string | number | undefined>;
@@ -13,20 +13,7 @@ type SmsNodeType = Node<SmsNodeData>;
 
 export const SmsNode = memo((props: NodeProps<SmsNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
-
-  useEffect(() => {
-    fetchSmsCredentials().then((creds) => {
-      setCredentials(creds);
-      if (creds.accountSid || creds.authToken) {
-        setNodes((nodes) => nodes.map((n) =>
-          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
-        ));
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
@@ -39,7 +26,7 @@ export const SmsNode = memo((props: NodeProps<SmsNodeType>) => {
 
   const handleSubmit = (values: SmsFormValues) => {
     setNodes((nodes) => nodes.map((node) => {
-      if (node.id === props.id) return { ...node, data: { ...node.data, ...credentials, ...values } };
+      if (node.id === props.id) return { ...node, data: { ...node.data, ...values } };
       return node;
     }));
   };

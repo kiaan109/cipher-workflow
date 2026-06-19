@@ -17,12 +17,3 @@ export async function fetchTwitterToken(): Promise<TwitterToken> {
 
   return token;
 };
-
-export async function fetchTwitterCredentials() {
-  return {
-    apiKey: process.env.TWITTER_API_KEY ?? "",
-    apiKeySecret: process.env.TWITTER_API_KEY_SECRET ?? "",
-    accessToken: process.env.TWITTER_ACCESS_TOKEN ?? "",
-    accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET ?? "",
-  };
-}

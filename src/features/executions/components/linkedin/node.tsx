@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { LinkedinDialog, LinkedinFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchLinkedinToken, fetchLinkedinCredentials } from "./actions";
+import { fetchLinkedinToken } from "./actions";
 import { LINKEDIN_CHANNEL_NAME } from "@/inngest/channels/linkedin";
 
 type LinkedInNodeData = Record<string, string | undefined>;
@@ -14,17 +14,6 @@ type LinkedInNodeType = Node<LinkedInNodeData>;
 export const LinkedInNode = memo((props: NodeProps<LinkedInNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
-
-  useEffect(() => {
-    fetchLinkedinCredentials().then((creds) => {
-      if (creds.accessToken || creds.personUrn) {
-        setNodes((nodes) => nodes.map((n) =>
-          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
-        ));
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,

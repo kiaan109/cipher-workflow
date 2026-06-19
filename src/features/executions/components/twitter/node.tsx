@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState, useEffect } from "react";
+import { memo, useState } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { TwitterDialog, TwitterFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchTwitterToken, fetchTwitterCredentials } from "./actions";
+import { fetchTwitterToken } from "./actions";
 import { TWITTER_CHANNEL_NAME } from "@/inngest/channels/twitter";
 
 type TwitterNodeData = Record<string, string | undefined>;
@@ -14,17 +14,6 @@ type TwitterNodeType = Node<TwitterNodeData>;
 export const TwitterNode = memo((props: NodeProps<TwitterNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
   const { setNodes } = useReactFlow();
-
-  useEffect(() => {
-    fetchTwitterCredentials().then((creds) => {
-      if (creds.apiKey || creds.accessToken) {
-        setNodes((nodes) => nodes.map((n) =>
-          n.id === props.id ? { ...n, data: { ...n.data, ...creds } } : n
-        ));
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.id]);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,

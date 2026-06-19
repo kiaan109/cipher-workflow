@@ -15,6 +15,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  apiKey: z.string().min(1, "Resend API key is required"),
+  fromEmail: z.string().min(1, "Sender is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   to: z.string().min(1, "Recipient email is required"),
   subject: z.string().min(1, "Subject is required"),
@@ -33,21 +35,21 @@ interface Props {
 export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<EmailFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", to: "", subject: "", body: "", ...defaultValues },
+    defaultValues: { apiKey: "", fromEmail: "", variableName: "", to: "", subject: "", body: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", to: "", subject: "", body: "", ...defaultValues });
+    if (open) form.reset({ apiKey: "", fromEmail: "", variableName: "", to: "", subject: "", body: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myEmail";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Email</DialogTitle>
-          <DialogDescription>Send an email via the platform mail account.</DialogDescription>
+          <DialogDescription>Enter your Resend credentials for this node, then configure the email.</DialogDescription>
         </DialogHeader>
         <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2 text-sm hover:bg-muted transition-colors">
           <span className="text-muted-foreground">Need credentials?</span>
@@ -55,6 +57,12 @@ export const EmailDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }
         </a>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">
+            <FormField control={form.control} name="apiKey" render={({ field }) => (
+              <FormItem><FormLabel>Resend API Key</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="re_..." {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="fromEmail" render={({ field }) => (
+              <FormItem><FormLabel>From</FormLabel><FormControl><Input placeholder="Your Name <hello@yourdomain.com>" {...field} /></FormControl><FormDescription>Use a sender/domain verified in Resend.</FormDescription><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

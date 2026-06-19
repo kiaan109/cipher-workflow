@@ -217,7 +217,7 @@ export const EmptyView = ({
   onNew
 }: EmptyViewProps) => {
   return (
-    <Empty className="border border-dashed border-gray-200 bg-white rounded-xl">
+    <Empty className="border-0 glass-card rounded-2xl p-8">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <PackageOpenIcon />
@@ -317,7 +317,7 @@ export const EntityItem = ({
     <Link href={href} prefetch>
       <Card
         className={cn(
-          "p-4 shadow-none border border-gray-100 hover:border-gray-200 hover:shadow-sm cursor-pointer bg-white transition-all duration-150",
+          "p-4 shadow-none border-0 cursor-pointer glass-card rounded-xl transition-all duration-200",
           isRemoving && "opacity-50 cursor-not-allowed",
           className,
         )}

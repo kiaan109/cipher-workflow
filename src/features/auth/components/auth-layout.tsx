@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div style={{
+    <div className="auth-page" style={{
       background: '#000', minHeight: '100dvh',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '2rem 1.5rem', position: 'relative', overflow: 'hidden',

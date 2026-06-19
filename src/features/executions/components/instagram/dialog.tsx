@@ -15,6 +15,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
+  accessToken: z.string().min(1, "Access token is required"),
+  userId: z.string().min(1, "Instagram User ID is required"),
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   imageUrl: z.string().url("Must be a valid URL"),
   caption: z.string().optional(),
@@ -32,11 +34,11 @@ interface Props {
 export const InstagramDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<InstagramFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", imageUrl: "", caption: "", ...defaultValues },
+    defaultValues: { accessToken: "", userId: "", variableName: "", imageUrl: "", caption: "", ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", imageUrl: "", caption: "", ...defaultValues });
+    if (open) form.reset({ accessToken: "", userId: "", variableName: "", imageUrl: "", caption: "", ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myInstagram";
@@ -46,10 +48,19 @@ export const InstagramDialog = ({ open, onOpenChange, onSubmit, defaultValues = 
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Instagram</DialogTitle>
-          <DialogDescription>Post a photo to Instagram. Platform credentials are pre-configured.</DialogDescription>
+          <DialogDescription>Enter the Instagram Graph API details for this node, then configure the post.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-4">
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Requires an Instagram Business or Creator account connected to a Facebook Page.
+            </div>
+            <FormField control={form.control} name="accessToken" render={({ field }) => (
+              <FormItem><FormLabel>Access Token</FormLabel><FormControl><Input type="password" autoComplete="off" placeholder="EAAB..." {...field} /></FormControl><FormDescription>Use a long-lived token with content publishing permission.</FormDescription><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="userId" render={({ field }) => (
+              <FormItem><FormLabel>Instagram User ID</FormLabel><FormControl><Input placeholder="17841400000000000" {...field} /></FormControl><FormDescription>The numeric Instagram account ID from the Graph API.</FormDescription><FormMessage /></FormItem>
+            )} />
             <FormField control={form.control} name="variableName" render={({ field }) => (
               <FormItem>
                 <FormLabel>Variable Name</FormLabel>

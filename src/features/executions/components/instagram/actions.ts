@@ -17,10 +17,3 @@ export async function fetchInstagramToken(): Promise<InstagramToken> {
 
   return token;
 };
-
-export async function fetchInstagramCredentials() {
-  return {
-    accessToken: process.env.INSTAGRAM_ACCESS_TOKEN ?? "",
-    userId: process.env.INSTAGRAM_USER_ID ?? "",
-  };
-}

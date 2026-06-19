@@ -113,7 +113,7 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08080a] text-white flex flex-col">
+    <div className="demo-page min-h-screen bg-white text-zinc-900 flex flex-col">
       <style>{`
         @keyframes pulse-ring {
           0%, 100% { opacity: 0.5; transform: scale(1); }
