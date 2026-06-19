@@ -130,10 +130,10 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
     return (
       <div
         key={`${node.type}-${node.appId || ""}-${idx}`}
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 border-transparent hover:border-l-indigo-500 hover:bg-white/60 transition-all duration-150 group"
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer border-l-2 border-transparent hover:border-l-indigo-500 hover:bg-zinc-50 transition-all duration-150 group"
         onClick={() => handleNodeSelect(node)}
       >
-        <div className="shrink-0 size-9 rounded-xl bg-white/80 border border-white/90 shadow-sm flex items-center justify-center text-base group-hover:shadow-md transition-shadow">
+        <div className="shrink-0 size-9 rounded-xl bg-zinc-50 border border-zinc-200 shadow-sm flex items-center justify-center text-base group-hover:shadow-md transition-shadow">
           {typeof Icon === "string" ? (
             Icon.startsWith("/") ? (
               <img src={Icon} alt={node.label} className="size-5 object-contain rounded-sm" />
@@ -145,8 +145,8 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
           )}
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="font-medium text-sm truncate">{node.label}</span>
-          <span className="text-xs text-muted-foreground truncate">{node.description}</span>
+          <span className="font-medium text-sm text-zinc-900 truncate">{node.label}</span>
+          <span className="text-xs text-zinc-500 truncate">{node.description}</span>
         </div>
       </div>
     );
@@ -154,7 +154,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
 
   const renderGroup = (label: string, nodes: NodeTypeOption[]) => (
     <div key={label}>
-      <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest sticky top-0 bg-white/60 backdrop-blur-sm">{label}</div>
+      <div className="px-4 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest sticky top-0 bg-white/95 backdrop-blur-sm">{label}</div>
       {nodes.map((n, i) => renderNode(n, i))}
       <Separator />
     </div>
@@ -163,19 +163,19 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
   return (
     <Sheet open={open} onOpenChange={v => { onOpenChange(v); if (!v) setSearch(""); }}>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 liquid-glass-strong border-l border-white/70">
-        <div className="p-6 pb-3 border-b border-white/60">
+      <SheetContent side="right" className="w-full sm:w-[420px] sm:max-w-none flex flex-col p-0 bg-white/95 backdrop-blur-xl border-l border-zinc-200 shadow-2xl">
+        <div className="p-6 pb-3 border-b border-zinc-200">
           <SheetHeader>
-            <SheetTitle className="text-xl font-bold text-gray-900">Add a Step</SheetTitle>
-            <SheetDescription className="text-sm text-gray-500">Pick what your workflow should do next</SheetDescription>
+            <SheetTitle className="text-xl font-bold text-zinc-900">Add a Step</SheetTitle>
+            <SheetDescription className="text-sm text-zinc-600">Pick what your workflow should do next</SheetDescription>
           </SheetHeader>
           <div className="relative mt-3">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
             <Input
               placeholder="Search HubSpot, Airtable, Summarize..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-white border-zinc-300 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-indigo-500"
               autoFocus
             />
           </div>
@@ -183,10 +183,10 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
         <div className="flex-1 overflow-y-auto bg-transparent">
           {filtered ? (
             filtered.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">No nodes found for "{search}"</div>
+              <div className="p-8 text-center text-sm text-zinc-500">No nodes found for "{search}"</div>
             ) : (
               <div>
-                <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Results ({filtered.length})</div>
+                <div className="px-4 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Results ({filtered.length})</div>
                 {filtered.map((n, i) => renderNode(n, i))}
               </div>
             )
@@ -199,7 +199,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
               {renderGroup("Social Media", socialNodes)}
               {renderGroup("Productivity", productivityNodes)}
               <div>
-                <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest sticky top-0 bg-white/60 backdrop-blur-sm">
+                <div className="px-4 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest sticky top-0 bg-white/95 backdrop-blur-sm">
                   App Integrations <span className="text-indigo-500 font-bold">{APP_CATALOG.length}+ apps</span>
                 </div>
                 {appNodes.map((n, i) => renderNode(n, i))}

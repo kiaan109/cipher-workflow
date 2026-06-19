@@ -31,14 +31,14 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999, background: '#000',
+      position: 'fixed', inset: 0, zIndex: 9999, background: '#fff',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: 'Inter, sans-serif',
     }}>
       <div style={{
         position: 'absolute', top: '2rem', left: '2rem',
         fontFamily: '"Instrument Serif", serif', fontStyle: 'italic',
-        fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)',
+        fontSize: '0.7rem', color: 'rgba(17,24,39,0.55)',
         letterSpacing: '0.3em', textTransform: 'uppercase',
       }}>Cipher</div>
 
@@ -51,7 +51,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
           transition={{ duration: 0.35, ease: 'easeOut' }}
           style={{
             fontFamily: '"Instrument Serif", serif', fontStyle: 'italic',
-            fontSize: 'clamp(4rem, 14vw, 10rem)', color: '#fff', lineHeight: 1,
+            fontSize: 'clamp(4rem, 14vw, 10rem)', color: '#111827', lineHeight: 1,
             position: 'absolute', userSelect: 'none',
           }}
         >
@@ -62,7 +62,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
       <div style={{
         position: 'absolute', bottom: '2rem', right: '2rem',
         fontFamily: '"Instrument Serif", serif', fontStyle: 'italic',
-        fontSize: 'clamp(4.5rem, 14vw, 10rem)', color: '#fff', lineHeight: 1,
+        fontSize: 'clamp(4.5rem, 14vw, 10rem)', color: '#111827', lineHeight: 1,
         fontVariantNumeric: 'tabular-nums',
       }}>
         {String(count).padStart(3, '0')}
@@ -70,7 +70,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
 
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        height: 2, background: 'rgba(255,255,255,0.08)',
+        height: 2, background: 'rgba(17,24,39,0.08)',
       }}>
         <div style={{
           height: '100%', width: `${count}%`,
