@@ -130,7 +130,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
     return (
       <div
         key={`${node.type}-${node.appId || ""}-${idx}`}
-        className="flex items-center gap-4 px-4 py-3 cursor-pointer border-l-2 border-transparent hover:border-l-primary hover:bg-muted/30 transition-all"
+        className="flex items-center gap-4 px-4 py-3 cursor-pointer border-l-2 border-transparent hover:border-l-blue-600 hover:bg-blue-50/50 transition-all"
         onClick={() => handleNodeSelect(node)}
       >
         <div className="shrink-0 size-8 flex items-center justify-center text-lg">
@@ -154,7 +154,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
 
   const renderGroup = (label: string, nodes: NodeTypeOption[]) => (
     <div key={label}>
-      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider sticky top-0 bg-background/95 backdrop-blur-sm">{label}</div>
+      <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider sticky top-0 bg-white/95 backdrop-blur-sm">{label}</div>
       {nodes.map((n, i) => renderNode(n, i))}
       <Separator />
     </div>
@@ -199,7 +199,7 @@ export function NodeSelector({ open, onOpenChange, children }: NodeSelectorProps
               {renderGroup("Social Media", socialNodes)}
               {renderGroup("Productivity", productivityNodes)}
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider sticky top-0 bg-background/95 backdrop-blur-sm">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider sticky top-0 bg-white/95 backdrop-blur-sm">
                   App Integrations <span className="text-primary font-bold">{APP_CATALOG.length}+ apps</span>
                 </div>
                 {appNodes.map((n, i) => renderNode(n, i))}
