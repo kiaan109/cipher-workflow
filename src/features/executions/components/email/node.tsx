@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { EmailDialog, EmailFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchEmailToken } from "./actions";
+import { fetchEmailToken, fetchEmailCredentials } from "./actions";
 import { EMAIL_CHANNEL_NAME } from "@/inngest/channels/email";
 
 type EmailNodeData = Record<string, string | number | undefined>;
@@ -13,7 +13,10 @@ type EmailNodeType = Node<EmailNodeData>;
 
 export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
+
+  useEffect(() => { fetchEmailCredentials().then(setCredentials); }, []);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
@@ -26,7 +29,7 @@ export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
 
   const handleSubmit = (values: EmailFormValues) => {
     setNodes((nodes) => nodes.map((node) => {
-      if (node.id === props.id) return { ...node, data: { ...node.data, ...values } };
+      if (node.id === props.id) return { ...node, data: { ...node.data, ...credentials, ...values } };
       return node;
     }));
   };

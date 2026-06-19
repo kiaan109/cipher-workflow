@@ -10,6 +10,8 @@ type EmailData = {
   to?: string;
   subject?: string;
   body?: string;
+  apiKey?: string;
+  fromEmail?: string;
 };
 
 export const emailExecutor: NodeExecutor<EmailData> = async ({
@@ -21,8 +23,8 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
 }) => {
   await publish(emailChannel().status({ nodeId, status: "loading" }));
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+  const apiKey = data.apiKey || process.env.RESEND_API_KEY;
+  const fromEmail = data.fromEmail || process.env.RESEND_FROM_EMAIL || "Cipher AI <onboarding@resend.dev>";
 
   if (!apiKey) {
     await publish(emailChannel().status({ nodeId, status: "error" }));

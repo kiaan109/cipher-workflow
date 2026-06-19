@@ -17,3 +17,10 @@ export async function fetchEmailToken(): Promise<EmailToken> {
 
   return token;
 };
+
+export async function fetchEmailCredentials() {
+  return {
+    apiKey: process.env.RESEND_API_KEY ?? "",
+    fromEmail: process.env.RESEND_FROM_EMAIL ?? "Cipher AI <onboarding@resend.dev>",
+  };
+}

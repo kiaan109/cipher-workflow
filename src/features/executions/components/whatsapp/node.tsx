@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { WhatsappDialog, WhatsappFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchWhatsappToken } from "./actions";
+import { fetchWhatsappToken, fetchWhatsappCredentials } from "./actions";
 import { WHATSAPP_CHANNEL_NAME } from "@/inngest/channels/whatsapp";
 
 type WhatsAppNodeData = Record<string, string | undefined>;
@@ -13,7 +13,10 @@ type WhatsAppNodeType = Node<WhatsAppNodeData>;
 
 export const WhatsAppNode = memo((props: NodeProps<WhatsAppNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
+
+  useEffect(() => { fetchWhatsappCredentials().then(setCredentials); }, []);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
@@ -26,7 +29,7 @@ export const WhatsAppNode = memo((props: NodeProps<WhatsAppNodeType>) => {
 
   const handleSubmit = (values: WhatsappFormValues) => {
     setNodes((nodes) => nodes.map((node) => {
-      if (node.id === props.id) return { ...node, data: { ...node.data, ...values } };
+      if (node.id === props.id) return { ...node, data: { ...node.data, ...credentials, ...values } };
       return node;
     }));
   };

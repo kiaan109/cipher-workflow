@@ -1,11 +1,11 @@
 ﻿"use client";
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { InstagramDialog, InstagramFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { fetchInstagramToken } from "./actions";
+import { fetchInstagramToken, fetchInstagramCredentials } from "./actions";
 import { INSTAGRAM_CHANNEL_NAME } from "@/inngest/channels/instagram";
 
 type InstagramNodeData = Record<string, string | undefined>;
@@ -13,7 +13,10 @@ type InstagramNodeType = Node<InstagramNodeData>;
 
 export const InstagramNode = memo((props: NodeProps<InstagramNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(() => Object.keys(props.data || {}).length === 0);
+  const [credentials, setCredentials] = useState<Record<string, string>>({});
   const { setNodes } = useReactFlow();
+
+  useEffect(() => { fetchInstagramCredentials().then(setCredentials); }, []);
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
@@ -26,7 +29,7 @@ export const InstagramNode = memo((props: NodeProps<InstagramNodeType>) => {
 
   const handleSubmit = (values: InstagramFormValues) => {
     setNodes((nodes) => nodes.map((node) => {
-      if (node.id === props.id) return { ...node, data: { ...node.data, ...values } };
+      if (node.id === props.id) return { ...node, data: { ...node.data, ...credentials, ...values } };
       return node;
     }));
   };
