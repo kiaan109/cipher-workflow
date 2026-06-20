@@ -34,6 +34,7 @@ export async function GET(req: Request) {
     return Response.redirect(url.toString());
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown_error";
+    console.error("[google-oauth-callback] failed:", err);
     const url = new URL(returnTo, process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
     url.searchParams.set("google_error", message);
     return Response.redirect(url.toString());

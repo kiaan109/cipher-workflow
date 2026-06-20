@@ -18,6 +18,7 @@ import {
 } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { RotateCcwIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { ErrorView, LoadingView } from "@/components/entity-components";
 import { useSuspenseWorkflow, useUpdateWorkflow } from "@/features/workflows/hooks/use-workflows";
 
@@ -64,6 +65,22 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
     setWorkflowId(workflowId);
     return () => setWorkflowId(null);
   }, [setWorkflowId, workflowId]);
+
+  // Surface the result of the Google OAuth redirect (see /api/integrations/google/callback)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("google_error");
+    const connected = params.get("google_connected");
+    if (!error && !connected) return;
+
+    if (error) toast.error(`Failed to connect Google account: ${error}`);
+    if (connected) toast.success("Google account connected");
+
+    params.delete("google_error");
+    params.delete("google_connected");
+    const newSearch = params.toString();
+    window.history.replaceState({}, "", window.location.pathname + (newSearch ? `?${newSearch}` : ""));
+  }, []);
 
   const triggerAutoSave = useCallback((currentNodes: Node[], currentEdges: Edge[]) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
