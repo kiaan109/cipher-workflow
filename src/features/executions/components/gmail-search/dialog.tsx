@@ -9,7 +9,8 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { CheckCircle2Icon, MailIcon, UnlinkIcon } from "lucide-react";
+import { AlertTriangleIcon, CheckCircle2Icon, MailIcon, UnlinkIcon } from "lucide-react";
+import { toast } from "sonner";
 
 const schema = z.object({
   variableName: z.string().min(1).regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/),
@@ -66,6 +67,12 @@ export const GmailSearchDialog = ({ open, onOpenChange, onSubmit, defaultValues 
     if (open) form.reset({ ...DEFAULTS, ...defaultValues });
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (open) {
+      toast.warning("Gmail Search is still in development and may not work right now.");
+    }
+  }, [open]);
+
   const watchVar = form.watch("variableName") || "gmailSearch";
 
   const handleConnect = () => {
@@ -87,6 +94,11 @@ export const GmailSearchDialog = ({ open, onOpenChange, onSubmit, defaultValues 
             Connect your real Gmail account, then describe what you&apos;re looking for in plain language.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+          <AlertTriangleIcon className="size-4 shrink-0 mt-0.5" />
+          <span>This node is still in development and may not work at this moment.</span>
+        </div>
 
         <div className="rounded-lg border p-3 flex items-center justify-between gap-3">
           {loading ? (

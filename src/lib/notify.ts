@@ -57,3 +57,44 @@ export async function sendWorkflowEmail({
     console.error("[notify] Failed to send workflow email:", e instanceof Error ? e.message : e);
   }
 }
+
+/**
+ * Sends a password reset email via Resend, used by Better Auth's
+ * emailAndPassword.sendResetPassword callback.
+ */
+export async function sendPasswordResetEmail({
+  to,
+  resetUrl,
+}: {
+  to: string;
+  resetUrl: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) { console.warn("[notify] RESEND_API_KEY not set, skipping password reset email"); return; }
+
+  const from = process.env.RESEND_FROM_EMAIL || "noreply@arabyshanaya.com";
+
+  try {
+    const res = await fetch(RESEND_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        subject: "Reset your Cipher password",
+        text: `Hi,\n\nWe received a request to reset your Cipher password. Click the link below to choose a new one. This link expires in 1 hour.\n\n${resetUrl}\n\nIf you didn't request this, you can safely ignore this email.\n\n- Cipher`,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error(`[notify] Resend API error ${res.status}: ${body}`);
+    } else {
+      console.log(`[notify] Sent password reset email to ${to}`);
+    }
+  } catch (e) {
+    console.error("[notify] Failed to send password reset email:", e instanceof Error ? e.message : e);
+  }
+}

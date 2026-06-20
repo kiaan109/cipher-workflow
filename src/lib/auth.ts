@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/db";
 import { polarClient } from "./polar";
+import { sendPasswordResetEmail } from "./notify";
 
 const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
 
@@ -52,6 +53,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail({ to: user.email, resetUrl: url });
+    },
   },
   socialProviders,
   plugins,
