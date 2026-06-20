@@ -14,6 +14,7 @@ import {
 } from "@/components/entity-components";
 import {
   useCreateWorkflow,
+  useDuplicateWorkflow,
   usePermanentlyDeleteWorkflow,
   useRemoveWorkflow,
   useRestoreWorkflow,
@@ -27,7 +28,7 @@ import { useEntitySearch } from "@/hooks/use-entity-search";
 import type { Workflow } from "@/generated/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon, WorkflowIcon } from "lucide-react";
+import { CopyIcon, Trash2Icon, WorkflowIcon } from "lucide-react";
 
 export const WorkflowsSearch = () => {
   const [params, setParams] = useWorkflowsParams();
@@ -164,10 +165,11 @@ export const WorkflowsEmpty = () => {
 
 export const WorkflowItem = ({
   data,
-}: { 
+}: {
   data: Workflow
 }) => {
   const removeWorkflow = useRemoveWorkflow();
+  const duplicateWorkflow = useDuplicateWorkflow();
 
   const handleRemove = () => {
     const confirmed = window.confirm(
@@ -175,6 +177,12 @@ export const WorkflowItem = ({
     );
     if (!confirmed) return;
     removeWorkflow.mutate({ id: data.id });
+  }
+
+  const handleDuplicate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    duplicateWorkflow.mutate({ id: data.id });
   }
 
   return (
@@ -192,6 +200,17 @@ export const WorkflowItem = ({
         <div className="size-8 flex items-center justify-center">
           <WorkflowIcon className="size-5 text-muted-foreground" />
         </div>
+      }
+      actions={
+        <Button
+          size="icon"
+          variant="ghost"
+          disabled={duplicateWorkflow.isPending}
+          onClick={handleDuplicate}
+          title="Duplicate workflow"
+        >
+          <CopyIcon className="size-4" />
+        </Button>
       }
       onRemove={handleRemove}
       isRemoving={removeWorkflow.isPending}

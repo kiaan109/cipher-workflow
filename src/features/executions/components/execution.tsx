@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { JsonView } from "@/components/json-view";
 import { useSuspenseExecution } from "@/features/executions/hooks/use-executions";
 import { useTRPC } from "@/trpc/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,10 +62,13 @@ const StatusBadge = ({ status }: { status: "success" | "error" }) => (
 const NodeStepCard = ({ step, index }: { step: NodeStep; index: number }) => {
   const [open, setOpen] = useState(false);
   const icon = NODE_ICONS[step.nodeType] || "◇";
+  const hasTextField = step.output !== null && typeof step.output === "object" && typeof (step.output as Record<string, unknown>).text === "string";
   const outputText = step.output
-    ? typeof step.output === "object"
-      ? (step.output as Record<string, unknown>).text as string || JSON.stringify(step.output, null, 2)
-      : String(step.output)
+    ? hasTextField
+      ? (step.output as Record<string, unknown>).text as string
+      : typeof step.output === "object"
+        ? JSON.stringify(step.output, null, 2)
+        : String(step.output)
     : null;
 
   return (
@@ -99,14 +103,12 @@ const NodeStepCard = ({ step, index }: { step: NodeStep; index: number }) => {
             {step.output != null && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2 mt-1">Output</p>
-                {outputText && outputText.length < 2000 ? (
+                {hasTextField || typeof step.output !== "object" ? (
                   <div className="text-sm bg-background border rounded-md p-3 whitespace-pre-wrap font-mono leading-relaxed">
                     {outputText}
                   </div>
                 ) : (
-                  <pre className="text-xs font-mono overflow-auto bg-background border rounded-md p-3 max-h-64">
-                    {JSON.stringify(step.output, null, 2)}
-                  </pre>
+                  <JsonView data={step.output} maxHeight="16rem" />
                 )}
               </div>
             )}
@@ -244,9 +246,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
           </CardHeader>
           <CardContent>
             {showRawOutput ? (
-              <pre className="text-xs font-mono overflow-auto bg-muted rounded-md p-4 max-h-96">
-                {JSON.stringify(Object.fromEntries(contextVars), null, 2)}
-              </pre>
+              <JsonView data={Object.fromEntries(contextVars)} maxHeight="24rem" />
             ) : (
               <div className="space-y-3">
                 {contextVars.map(([key, value]) => {

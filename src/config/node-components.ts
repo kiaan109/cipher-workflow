@@ -38,6 +38,8 @@ import { EmbeddingsNode } from "@/features/executions/components/embeddings/node
 import { VectorStoreNode } from "@/features/executions/components/vector-store/node";
 import { WebhookTriggerNode } from "@/features/triggers/components/webhook-trigger/node";
 import { ScheduleTriggerNode } from "@/features/triggers/components/schedule-trigger/node";
+import { AutonomousSearchAgentNode } from "@/features/executions/components/autonomous-search-agent/node";
+import { GmailSearchNode } from "@/features/executions/components/gmail-search/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -77,6 +79,8 @@ export const nodeComponents = {
   [NodeType.VECTOR_STORE]: VectorStoreNode,
   [NodeType.WEBHOOK_TRIGGER]: WebhookTriggerNode,
   [NodeType.SCHEDULE_TRIGGER]: ScheduleTriggerNode,
+  [NodeType.AUTONOMOUS_SEARCH_AGENT]: AutonomousSearchAgentNode,
+  [NodeType.GMAIL_SEARCH]: GmailSearchNode,
 } as const satisfies NodeTypes;
 
 export type RegisteredNodeType = keyof typeof nodeComponents;

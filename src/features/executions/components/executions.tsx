@@ -16,6 +16,13 @@ import { useExecutionsParams } from "../hooks/use-executions-params";
 import type { Execution } from "@/generated/prisma";
 import { ExecutionStatus } from "@/generated/prisma";
 import { CheckCircle2Icon, ClockIcon, Loader2Icon, XCircleIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const ExecutionsList = () => {
   const executions = useSuspenseExecutions();
@@ -36,6 +43,27 @@ export const ExecutionsHeader = () => {
       title="Executions"
       description="View your workflow execution history"
     />
+  );
+};
+
+export const ExecutionsStatusFilter = () => {
+  const [params, setParams] = useExecutionsParams();
+
+  return (
+    <Select
+      value={params.status || "all"}
+      onValueChange={(value) => setParams({ ...params, status: value === "all" ? "" : value, page: 1 })}
+    >
+      <SelectTrigger className="w-[160px] bg-background ml-auto">
+        <SelectValue placeholder="All statuses" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All statuses</SelectItem>
+        <SelectItem value={ExecutionStatus.RUNNING}>Running</SelectItem>
+        <SelectItem value={ExecutionStatus.SUCCESS}>Success</SelectItem>
+        <SelectItem value={ExecutionStatus.FAILED}>Failed</SelectItem>
+      </SelectContent>
+    </Select>
   );
 };
 
@@ -61,6 +89,7 @@ export const ExecutionsContainer = ({
   return (
     <EntityContainer
       header={<ExecutionsHeader />}
+      search={<ExecutionsStatusFilter />}
       pagination={<ExecutionsPagination />}
     >
       {children}

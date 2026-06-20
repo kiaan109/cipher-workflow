@@ -20,6 +20,7 @@ export default function LandingNavbar() {
   }, []);
 
   const navItems: { label: string; target?: string; href?: string }[] = [
+    { label: 'Universal Search', target: 'universal-search' },
     { label: 'Workflow', target: 'how-it-works' },
     { label: 'Band', target: 'band' },
     { label: 'Integrations', target: 'integrations' },

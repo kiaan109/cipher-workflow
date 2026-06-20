@@ -36,6 +36,28 @@ export const useCreateWorkflow = () => {
 };
 
 /**
+ * Hook to duplicate a workflow, including its nodes and connections
+ */
+export const useDuplicateWorkflow = () => {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  return useMutation(
+    trpc.workflows.duplicate.mutationOptions({
+      onSuccess: (data) => {
+        toast.success(`Duplicated as "${data.name}"`);
+        queryClient.invalidateQueries(
+          trpc.workflows.getMany.queryOptions({}),
+        );
+      },
+      onError: (error) => {
+        toast.error(`Failed to duplicate workflow: ${error.message}`);
+      },
+    }),
+  );
+};
+
+/**
  * Hook to remove a workflow (soft delete — moves it to trash)
  */
 export const useRemoveWorkflow = () => {

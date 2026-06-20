@@ -36,6 +36,8 @@ import { embeddingsExecutor } from "../components/embeddings/executor";
 import { vectorStoreExecutor } from "../components/vector-store/executor";
 import { webhookTriggerExecutor } from "@/features/triggers/components/webhook-trigger/executor";
 import { scheduleTriggerExecutor } from "@/features/triggers/components/schedule-trigger/executor";
+import { autonomousSearchAgentExecutor } from "../components/autonomous-search-agent/executor";
+import { gmailSearchExecutor } from "../components/gmail-search/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -75,6 +77,8 @@ export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.VECTOR_STORE]: vectorStoreExecutor,
   [NodeType.WEBHOOK_TRIGGER]: webhookTriggerExecutor,
   [NodeType.SCHEDULE_TRIGGER]: scheduleTriggerExecutor,
+  [NodeType.AUTONOMOUS_SEARCH_AGENT]: autonomousSearchAgentExecutor,
+  [NodeType.GMAIL_SEARCH]: gmailSearchExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor => {

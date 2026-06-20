@@ -1,6 +1,7 @@
 "use client";
 
 import { type NodeProps, Position, useReactFlow } from "@xyflow/react";
+import { createId } from "@paralleldrive/cuid2";
 import type { LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { memo, type ReactNode, useState } from "react";
@@ -11,6 +12,7 @@ import { WorkflowNode } from "@/components/workflow-node";
 import { type NodeStatus, NodeStatusIndicator } from "@/components/react-flow/node-status-indicator";
 import { workflowIdAtom } from "@/features/editor/store/atoms";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { JsonView } from "@/components/json-view";
 import { toast } from "sonner";
 
 interface BaseExecutionNodeProps extends NodeProps {
@@ -66,6 +68,21 @@ export const BaseExecutionNode = memo(
       );
     };
 
+    const handleDuplicate = () => {
+      setNodes((currentNodes) => {
+        const current = currentNodes.find((node) => node.id === id);
+        if (!current) return currentNodes;
+        const clone = {
+          ...current,
+          id: createId(),
+          selected: false,
+          position: { x: current.position.x + 40, y: current.position.y + 40 },
+          data: { ...current.data },
+        };
+        return [...currentNodes, clone];
+      });
+    };
+
     const handleExecuteStep = async () => {
       if (!workflowId) return;
       setIsExecutingStep(true);
@@ -94,6 +111,7 @@ export const BaseExecutionNode = memo(
         isExecutingStep={isExecutingStep}
         retryOnFail={retryOnFail}
         onToggleRetry={handleToggleRetry}
+        onDuplicate={handleDuplicate}
       >
         <NodeStatusIndicator
           status={status}
@@ -124,15 +142,17 @@ export const BaseExecutionNode = memo(
                 </BaseNode>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="w-80 max-h-72 overflow-y-auto" side="bottom">
+            <PopoverContent className="w-80" side="bottom">
               <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
                 {stepResult?.ok ? "Step output" : "Step error"}
               </p>
-              <pre className="whitespace-pre-wrap break-words text-xs">
-                {stepResult?.ok
-                  ? JSON.stringify(stepResult.output, null, 2)
-                  : stepResult?.error}
-              </pre>
+              {stepResult?.ok ? (
+                <JsonView data={stepResult.output} maxHeight="16rem" />
+              ) : (
+                <pre className="whitespace-pre-wrap break-words text-xs text-red-600">
+                  {stepResult?.error}
+                </pre>
+              )}
             </PopoverContent>
           </Popover>
         </NodeStatusIndicator>

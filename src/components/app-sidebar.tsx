@@ -2,7 +2,6 @@
 
 import {
   HistoryIcon,
-  KeyIcon,
   LogOutIcon,
   ZapIcon,
 } from "lucide-react";
@@ -27,12 +26,6 @@ const menuItems = [
     icon: ZapIcon,
     url: "/workflows",
     description: "Build automations",
-  },
-  {
-    title: "Credentials",
-    icon: KeyIcon,
-    url: "/credentials",
-    description: "Manage API keys",
   },
   {
     title: "Executions",

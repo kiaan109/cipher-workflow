@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import NodeCanvas from './NodeCanvas';
 
@@ -10,7 +11,61 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] as const },
 });
 
+const QUERIES = [
+  {
+    text: 'Find all emails from Adani in the last 2 years',
+    results: ['284 emails found', '12 contracts', '4 invoices', '8 meeting notes', 'Summary generated'],
+    sources: ['Gmail', 'Google Drive', 'Notion', 'Report'],
+  },
+  {
+    text: 'Show every invoice above ₹50,000 from Gmail and Drive',
+    results: ['37 invoices found', '₹18.4L total value', '6 overdue', 'Report generated'],
+    sources: ['Gmail', 'Google Drive', 'Report'],
+  },
+  {
+    text: 'Summarize my conversations with Reliance across every app',
+    results: ['142 messages found', '9 threads', '3 open commitments', 'Summary generated'],
+    sources: ['Gmail', 'Slack', 'WhatsApp', 'Report'],
+  },
+  {
+    text: 'Which clients have not been contacted in 30 days?',
+    results: ['14 clients flagged', '6 high priority', 'Follow-up list generated'],
+    sources: ['CRM', 'Gmail', 'Report'],
+  },
+];
+
 export default function HeroSection() {
+  const [queryIndex, setQueryIndex] = useState(0);
+  const [typed, setTyped] = useState('');
+  const [phase, setPhase] = useState<'typing' | 'searching' | 'results'>('typing');
+
+  const active = QUERIES[queryIndex];
+
+  useEffect(() => {
+    setTyped('');
+    setPhase('typing');
+    const full = active.text;
+    let i = 0;
+    const typeInterval = setInterval(() => {
+      i += 1;
+      setTyped(full.slice(0, i));
+      if (i >= full.length) {
+        clearInterval(typeInterval);
+        setPhase('searching');
+        window.setTimeout(() => setPhase('results'), 900);
+      }
+    }, 28);
+    return () => clearInterval(typeInterval);
+  }, [queryIndex, active.text]);
+
+  useEffect(() => {
+    if (phase !== 'results') return;
+    const next = window.setTimeout(() => {
+      setQueryIndex((i) => (i + 1) % QUERIES.length);
+    }, 3200);
+    return () => clearTimeout(next);
+  }, [phase]);
+
   return (
     <section
       style={{
@@ -87,101 +142,176 @@ export default function HeroSection() {
               className="lp-pulse-dot"
             />
             <span style={{ fontSize: 12, color: 'rgba(17,24,39,0.72)' }}>
-              Band of Agents Hackathon 2026
+              Universal AI Search &amp; Agent Memory
             </span>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb' }}>
-              Track 2 ready
+              New
             </span>
           </div>
         </motion.div>
 
-        <motion.p
-          {...fadeUp(0.28)}
-          style={{
-            fontSize: 12,
-            color: 'rgba(17,24,39,0.6)',
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            marginBottom: '0.75rem',
-          }}
-        >
-          Multi-Agent Software Development
-        </motion.p>
-
         <motion.h1
-          {...fadeUp(0.32)}
+          {...fadeUp(0.28)}
           className="font-heading"
           style={{
-            fontSize: 'clamp(2.8rem,8vw,6.5rem)',
+            fontSize: 'clamp(2.6rem,7.5vw,5.8rem)',
             color: '#111827',
-            lineHeight: 0.88,
+            lineHeight: 0.92,
             letterSpacing: '-0.04em',
-            maxWidth: '12ch',
+            maxWidth: '16ch',
           }}
         >
-          Build AI Agent Workflows Visually
+          Ask Anything.{' '}
+          <span className="accent-gradient-text">Search Everything.</span>
+          <br />
+          Automate Anything.
         </motion.h1>
 
         <motion.p
-          {...fadeUp(0.7)}
-          className="font-heading"
+          {...fadeUp(0.42)}
           style={{
-            fontSize: 'clamp(1.05rem,2.5vw,1.6rem)',
-            letterSpacing: '-0.01em',
-            marginTop: '1rem',
-            marginBottom: 0,
-            color: '#111827',
-            fontStyle: 'normal',
-          }}
-        >
-          Enterprise workflows. Agents that coordinate. Everything online.
-        </motion.p>
-
-        <motion.p
-          {...fadeUp(0.84)}
-          style={{
-            fontSize: 'clamp(0.92rem,1.5vw,1rem)',
-            color: 'rgba(17,24,39,0.72)',
+            fontSize: 'clamp(0.95rem,1.6vw,1.1rem)',
+            color: 'rgba(17,24,39,0.65)',
             maxWidth: '42rem',
             lineHeight: 1.8,
-            marginTop: '1rem',
+            marginTop: '1.1rem',
           }}
         >
-          Built for the LabLab AI Band of Agents track: a working online prototype where AI agents communicate,
-          coordinate, exchange context, and complete work together.
+          Cipher is your AI agent across every app — Gmail, WhatsApp, Slack, Notion, Drive, your CRM.
+          One search bar that searches, reasons, and acts across all of your connected tools.
         </motion.p>
 
+        {/* Universal Search Bar */}
         <motion.div
-          {...fadeUp(0.98)}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-            gap: '0.9rem',
-            width: '100%',
-            maxWidth: '56rem',
-            marginTop: '2rem',
-          }}
+          {...fadeUp(0.58)}
+          style={{ width: '100%', maxWidth: '46rem', marginTop: '2.5rem' }}
         >
-          {[
-            'Working prototype online',
-            'Video presentation ready',
-            'Pitch deck included',
-            'Band + Codeband aligned',
-          ].map(item => (
-            <div key={item} className="liquid-glass" style={{ padding: '0.95rem 1rem', textAlign: 'left' }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>{item}</p>
+          <div
+            className="liquid-glass-strong"
+            style={{
+              borderRadius: '1.25rem',
+              padding: '1.1rem 1.4rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              textAlign: 'left',
+            }}
+          >
+            <span style={{ fontSize: 18, flexShrink: 0 }}>🔎</span>
+            <span
+              style={{
+                flex: 1,
+                fontSize: 'clamp(0.85rem,1.6vw,1rem)',
+                color: '#111827',
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+            >
+              {typed}
+              <span className="lp-typing-cursor" style={{ borderRight: '2px solid #2563eb', marginLeft: 2 }} />
+            </span>
+            <div
+              className="lp-pulse-glow"
+              style={{
+                flexShrink: 0,
+                borderRadius: 9999,
+                padding: '0.55rem 1.1rem',
+                background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)',
+                color: '#fff',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              {phase === 'typing' ? 'Listening…' : phase === 'searching' ? 'Searching…' : 'Ask Cipher'}
             </div>
-          ))}
+          </div>
+
+          {/* Animated results */}
+          <div style={{ minHeight: 132, marginTop: '1.1rem' }}>
+            <AnimatePresence mode="wait">
+              {phase === 'results' && (
+                <motion.div
+                  key={queryIndex}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                      justifyContent: 'center',
+                      marginBottom: '0.9rem',
+                    }}
+                  >
+                    {active.results.map((r, i) => (
+                      <motion.div
+                        key={r}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.08, duration: 0.3 }}
+                        className="liquid-glass"
+                        style={{
+                          borderRadius: 9999,
+                          padding: '0.4rem 0.85rem',
+                          fontSize: 12.5,
+                          color: '#15803d',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <span style={{ color: '#16a34a' }}>✓</span>
+                        {r}
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {active.sources.map((s, i) => (
+                      <motion.span
+                        key={s}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            color: 'rgba(17,24,39,0.55)',
+                            border: '1px solid rgba(17,24,39,0.12)',
+                            borderRadius: 9999,
+                            padding: '0.3rem 0.7rem',
+                          }}
+                        >
+                          {s}
+                        </span>
+                        {i < active.sources.length - 1 && (
+                          <span style={{ color: 'rgba(59,130,246,0.5)', fontSize: 13 }}>→</span>
+                        )}
+                      </motion.span>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
 
         <motion.div
-          {...fadeUp(1.08)}
+          {...fadeUp(0.78)}
           style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: '1rem',
             justifyContent: 'center',
-            marginTop: '2.5rem',
+            marginTop: '1.5rem',
           }}
         >
           <Link href="/signup" style={{ textDecoration: 'none' }}>
@@ -233,39 +363,6 @@ export default function HeroSection() {
               Watch Demo ▶
             </div>
           </Link>
-        </motion.div>
-
-        <motion.div
-          {...fadeUp(1.2)}
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            justifyContent: 'center',
-            marginTop: '2.75rem',
-          }}
-        >
-          {[
-            { n: 'Online', l: 'Prototype is live' },
-            { n: 'Track 2', l: 'Multi-agent software development' },
-            { n: 'Node keys', l: 'Per-task credentialing', small: true },
-          ].map(s => (
-            <div
-              key={s.l}
-              className="liquid-glass"
-              style={{ borderRadius: '1.25rem', padding: '1.15rem 1.5rem', textAlign: 'center', minWidth: 140 }}
-            >
-              <p
-                className="font-heading accent-gradient-text"
-                style={{ fontSize: s.small ? '1.6rem' : '2.1rem', lineHeight: 1.1 }}
-              >
-                {s.n}
-              </p>
-              <p style={{ fontSize: 11, color: 'rgba(17,24,39,0.5)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {s.l}
-              </p>
-            </div>
-          ))}
         </motion.div>
       </div>
 

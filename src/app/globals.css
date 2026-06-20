@@ -326,6 +326,21 @@
   from { width: 0%; }
   to { width: var(--bar-width); }
 }
+@keyframes lp-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes lp-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes lp-orbit-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+@keyframes lp-dash-flow {
+  to { stroke-dashoffset: -24; }
+}
 
 .lp-scroll-down { animation: lp-scroll-down 1.5s ease-in-out infinite; }
 .lp-float { animation: lp-float 3s ease-in-out infinite; }
@@ -333,6 +348,10 @@
 .lp-marquee { animation: lp-marquee 30s linear infinite; }
 .lp-marquee-reverse { animation: lp-marquee-reverse 30s linear infinite; }
 .lp-pulse-dot { animation: lp-pulse-dot 2s ease-in-out infinite; }
+.lp-typing-cursor { animation: lp-blink 0.9s step-end infinite; }
+.lp-orbit { animation: lp-orbit linear infinite; }
+.lp-orbit-reverse { animation: lp-orbit-reverse linear infinite; }
+.lp-dash-flow { animation: lp-dash-flow 1.2s linear infinite; }
 
 .landing-page { cursor: none; background: #fff !important; color: #18181b !important; }
 .landing-page * { box-sizing: border-box; }

@@ -7,6 +7,9 @@ import LoadingScreen from '@/components/landing/LoadingScreen';
 import ParticleCanvas from '@/components/landing/ParticleCanvas';
 import LandingNavbar from '@/components/landing/LandingNavbar';
 import HeroSection from '@/components/landing/HeroSection';
+import SearchGraphSection from '@/components/landing/SearchGraphSection';
+import WhyCipherSection from '@/components/landing/WhyCipherSection';
+import AgentShowcaseSection from '@/components/landing/AgentShowcaseSection';
 import StatsSection from '@/components/landing/StatsSection';
 import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import BandIntegrationSection from '@/components/landing/BandIntegrationSection';
@@ -38,6 +41,9 @@ export default function LandingPage() {
           <LandingNavbar />
           <main>
             <HeroSection />
+            <SearchGraphSection />
+            <WhyCipherSection />
+            <AgentShowcaseSection />
             <StatsSection />
             <HowItWorksSection />
             <BandIntegrationSection />

@@ -27,9 +27,25 @@ model User {
   accounts      Account[]
   workflows     Workflow[]
   credentials   Credential[]
+  googleAccount GoogleAccount?
 
   @@unique([email])
   @@map("user")
+}
+
+model GoogleAccount {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  email        String
+  accessToken  String
+  refreshToken String
+  scope        String
+  expiresAt    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -164,6 +180,8 @@ enum NodeType {
   AI_MEMORY
   EMBEDDINGS
   VECTOR_STORE
+  AUTONOMOUS_SEARCH_AGENT
+  GMAIL_SEARCH
 }
 
 model Node {

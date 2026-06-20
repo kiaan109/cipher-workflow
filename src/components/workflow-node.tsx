@@ -1,7 +1,7 @@
 "use client";
 
 import { NodeToolbar, Position } from "@xyflow/react";
-import { Loader2Icon, PlayIcon, RepeatIcon, SettingsIcon, TrashIcon } from "lucide-react";
+import { CopyIcon, Loader2Icon, PlayIcon, RepeatIcon, SettingsIcon, TrashIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ interface WorkflowNodeProps {
   isExecutingStep?: boolean;
   retryOnFail?: boolean;
   onToggleRetry?: () => void;
+  onDuplicate?: () => void;
 };
 
 export function WorkflowNode({
@@ -30,6 +31,7 @@ export function WorkflowNode({
   isExecutingStep,
   retryOnFail,
   onToggleRetry,
+  onDuplicate,
 }: WorkflowNodeProps) {
   return (
     <>
@@ -49,6 +51,11 @@ export function WorkflowNode({
               className={cn(retryOnFail && "text-emerald-600")}
             >
               <RepeatIcon className="size-4" />
+            </Button>
+          )}
+          {onDuplicate && (
+            <Button size="sm" variant="ghost" onClick={onDuplicate} title="Duplicate node">
+              <CopyIcon className="size-4" />
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={onSettings}>

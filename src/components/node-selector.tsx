@@ -2,7 +2,7 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MousePointerIcon, SearchIcon } from "lucide-react";
+import { GlobeIcon, MailIcon, MousePointerIcon, SearchIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -34,6 +34,8 @@ const actionNodes: NodeTypeOption[] = [
 ];
 
 const aiNodes: NodeTypeOption[] = [
+  { type: NodeType.GMAIL_SEARCH, label: "Gmail Search", description: "Connect your real Gmail account and search it in plain language", icon: MailIcon },
+  { type: NodeType.AUTONOMOUS_SEARCH_AGENT, label: "Autonomous Search Agent", description: "One prompt — searches and reasons across every connected app", icon: "🛰️" },
   { type: NodeType.AI_AGENT, label: "AI Agent", description: "Autonomous AI that reasons and completes tasks", icon: "🤖" },
   { type: NodeType.AI_CHAIN, label: "Basic LLM Chain", description: "Simple prompt → LLM → output chain", icon: "⛓️" },
   { type: NodeType.SUMMARIZER, label: "Summarization Chain", description: "Summarize text with AI", icon: "📝" },

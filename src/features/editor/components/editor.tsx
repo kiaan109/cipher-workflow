@@ -80,6 +80,19 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
     triggerAutoSave(nodes, edges);
   }, [nodes, edges]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Ctrl/Cmd+S forces an immediate save instead of waiting for the autosave debounce.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+        saveWorkflow.mutate({ id: workflowId, nodes, edges });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [nodes, edges, workflowId, saveWorkflow]);
+
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
     [],

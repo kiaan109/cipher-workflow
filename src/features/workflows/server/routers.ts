@@ -70,6 +70,41 @@ export const workflowsRouter = createTRPCRouter({
     });
   }),
 
+  duplicate: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const source = await prisma.workflow.findUniqueOrThrow({
+        where: { id: input.id, userId: ctx.auth.user.id, deletedAt: null },
+        include: { nodes: true, connections: true },
+      });
+
+      const idMap = new Map(source.nodes.map((node) => [node.id, createId()]));
+
+      return prisma.workflow.create({
+        data: {
+          name: `${source.name} (copy)`,
+          userId: ctx.auth.user.id,
+          nodes: {
+            create: source.nodes.map((node) => ({
+              id: idMap.get(node.id),
+              type: node.type,
+              name: node.name,
+              position: node.position as object,
+              data: node.data as object,
+            })),
+          },
+          connections: {
+            create: source.connections.map((conn) => ({
+              fromNodeId: idMap.get(conn.fromNodeId)!,
+              toNodeId: idMap.get(conn.toNodeId)!,
+              fromOutput: conn.fromOutput,
+              toInput: conn.toInput,
+            })),
+          },
+        },
+      });
+    }),
+
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {
