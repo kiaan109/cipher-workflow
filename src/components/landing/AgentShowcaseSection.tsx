@@ -1,14 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { SearchIcon, BrainIcon, BarChart3Icon, MailIcon, CalendarIcon, HandshakeIcon } from 'lucide-react';
 
 const AGENTS = [
-  { icon: '🔍', name: 'Search Agent', desc: 'Finds anything across every connected app in seconds' },
-  { icon: '🧠', name: 'Research Agent', desc: 'Digs deeper, cross-references sources, builds context' },
-  { icon: '📊', name: 'Reporting Agent', desc: 'Turns scattered data into a finished report' },
-  { icon: '✉️', name: 'Email Agent', desc: 'Triages, drafts, and follows up on your behalf' },
-  { icon: '📅', name: 'Scheduling Agent', desc: 'Tracks commitments and surfaces what needs attention' },
-  { icon: '🤝', name: 'CRM Agent', desc: 'Flags stale leads and clients overdue for follow-up' },
+  { icon: SearchIcon, name: 'Search Agent', desc: 'Finds anything across every connected app in seconds' },
+  { icon: BrainIcon, name: 'Research Agent', desc: 'Digs deeper, cross-references sources, builds context' },
+  { icon: BarChart3Icon, name: 'Reporting Agent', desc: 'Turns scattered data into a finished report' },
+  { icon: MailIcon, name: 'Email Agent', desc: 'Triages, drafts, and follows up on your behalf' },
+  { icon: CalendarIcon, name: 'Scheduling Agent', desc: 'Tracks commitments and surfaces what needs attention' },
+  { icon: HandshakeIcon, name: 'CRM Agent', desc: 'Flags stale leads and clients overdue for follow-up' },
 ];
 
 export default function AgentShowcaseSection() {
@@ -60,11 +61,10 @@ export default function AgentShowcaseSection() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 22,
                   marginBottom: '1rem',
                 }}
               >
-                {agent.icon}
+                <agent.icon size={22} style={{ color: '#3b82f6' }} />
               </div>
               <p style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{agent.name}</p>
               <p style={{ fontSize: 13.5, color: 'rgba(17,24,39,0.6)', lineHeight: 1.6 }}>{agent.desc}</p>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { SearchIcon } from 'lucide-react';
 import NodeCanvas from './NodeCanvas';
 
 const fadeUp = (delay: number) => ({
@@ -197,7 +198,7 @@ export default function HeroSection() {
               textAlign: 'left',
             }}
           >
-            <span style={{ fontSize: 18, flexShrink: 0 }}>🔎</span>
+            <SearchIcon size={18} style={{ flexShrink: 0, color: '#6b7280' }} />
             <span
               style={{
                 flex: 1,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { CheckCircle2Icon, WrenchIcon, ZapIcon, StarIcon } from 'lucide-react';
 
 function DisagreementDiagram() {
   const [phase, setPhase] = useState(0);
@@ -51,8 +52,14 @@ function BranchDiagram() {
         {dot === 1 && <circle cx="110" cy="27" r="4" fill="#10b981" opacity="0.9" />}
       </svg>
       <div style={{ display: 'flex', gap: 24 }}>
-        <div style={{ fontSize: 11, color: '#fca5a5', fontWeight: 600, textAlign: 'center' }}>🔴 HIGH_RISK</div>
-        <div style={{ fontSize: 11, color: '#6ee7b7', fontWeight: 600, textAlign: 'center' }}>🟢 LOW_RISK</div>
+        <div style={{ fontSize: 11, color: '#fca5a5', fontWeight: 600, textAlign: 'center', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ef4444' }} />
+          HIGH_RISK
+        </div>
+        <div style={{ fontSize: 11, color: '#6ee7b7', fontWeight: 600, textAlign: 'center', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
+          LOW_RISK
+        </div>
       </div>
     </div>
   );
@@ -97,9 +104,9 @@ function VoiceDiagram() {
 
 function AIChatDiagram() {
   const CHATS = [
-    { user: 'Add a code reviewer agent', ai: '✅ Added @Reviewer to canvas. Connecting to @Engineer node...' },
-    { user: 'Fix the broken engineer node', ai: '🔧 Found issue: missing error handler. Fixed and reconnected.' },
-    { user: 'Set all agents to GPT-4o', ai: '⚡ Updated 5 agent models to GPT-4o. Costs updated in sidebar.' },
+    { user: 'Add a code reviewer agent', icon: CheckCircle2Icon, ai: 'Added @Reviewer to canvas. Connecting to @Engineer node...' },
+    { user: 'Fix the broken engineer node', icon: WrenchIcon, ai: 'Found issue: missing error handler. Fixed and reconnected.' },
+    { user: 'Set all agents to GPT-4o', icon: ZapIcon, ai: 'Updated 5 agent models to GPT-4o. Costs updated in sidebar.' },
   ];
   const [idx, setIdx] = useState(0);
   const [showAi, setShowAi] = useState(false);
@@ -114,20 +121,24 @@ function AIChatDiagram() {
       <div style={{ alignSelf: 'flex-end', maxWidth: '80%', padding: '0.5rem 0.875rem', borderRadius: '12px 12px 4px 12px', background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.3)', fontSize: 12, color: '#93c5fd' }}>
         {CHATS[idx].user}
       </div>
-      {showAi && (
-        <div style={{ alignSelf: 'flex-start', maxWidth: '90%', padding: '0.5rem 0.875rem', borderRadius: '12px 12px 12px 4px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', fontSize: 12, color: '#c4b5fd', animation: 'lp-fade-in 0.4s ease' }}>
-          {CHATS[idx].ai}
-        </div>
-      )}
+      {showAi && (() => {
+        const AiIcon = CHATS[idx].icon;
+        return (
+          <div style={{ alignSelf: 'flex-start', maxWidth: '90%', display: 'flex', alignItems: 'flex-start', gap: 6, padding: '0.5rem 0.875rem', borderRadius: '12px 12px 12px 4px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', fontSize: 12, color: '#c4b5fd', animation: 'lp-fade-in 0.4s ease' }}>
+            <AiIcon size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{CHATS[idx].ai}</span>
+          </div>
+        );
+      })()}
     </div>
   );
 }
 
 const CARDS = [
-  { title: 'Agents That Argue', desc: "Reviewer agents can reject work through Band. Real back-and-forth debate — not a linear pipeline.", tag: 'ORIGINALITY ⭐⭐⭐⭐⭐', col: 7, Diagram: DisagreementDiagram },
-  { title: 'Smart Branching', desc: 'Flow adapts based on agent output. Dashed edges show conditional paths.', tag: 'INTELLIGENCE ⭐⭐⭐⭐⭐', col: 5, Diagram: BranchDiagram },
-  { title: 'Build by Voice', desc: 'Describe your workflow by voice — watch the canvas build itself live.', tag: 'WOW FACTOR ⭐⭐⭐⭐⭐', col: 5, Diagram: VoiceDiagram },
-  { title: 'AI That Builds For You', desc: 'Chat to add nodes, fix errors, and build entire flows automatically.', tag: 'MAGIC ⭐⭐⭐⭐⭐', col: 7, Diagram: AIChatDiagram },
+  { title: 'Agents That Argue', desc: "Reviewer agents can reject work through Band. Real back-and-forth debate — not a linear pipeline.", tag: 'ORIGINALITY', col: 7, Diagram: DisagreementDiagram },
+  { title: 'Smart Branching', desc: 'Flow adapts based on agent output. Dashed edges show conditional paths.', tag: 'INTELLIGENCE', col: 5, Diagram: BranchDiagram },
+  { title: 'Build by Voice', desc: 'Describe your workflow by voice — watch the canvas build itself live.', tag: 'WOW FACTOR', col: 5, Diagram: VoiceDiagram },
+  { title: 'AI That Builds For You', desc: 'Chat to add nodes, fix errors, and build entire flows automatically.', tag: 'MAGIC', col: 7, Diagram: AIChatDiagram },
 ];
 
 export default function FeaturesSection() {
@@ -167,7 +178,14 @@ export default function FeaturesSection() {
                 <div style={{ marginTop: 'auto' }}>
                   <h3 className="font-heading" style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', color: '#fff', marginBottom: 8 }}>{card.title}</h3>
                   <p style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '1rem' }}>{card.desc}</p>
-                  <div className="liquid-glass" style={{ display: 'inline-flex', borderRadius: 9999, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>{card.tag}</div>
+                  <div className="liquid-glass" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 9999, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
+                    {card.tag}
+                    <span style={{ display: 'inline-flex', gap: 1 }}>
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <StarIcon key={idx} size={10} fill="#fbbf24" stroke="#fbbf24" />
+                      ))}
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             );

@@ -1,15 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { FolderIcon, Building2Icon } from 'lucide-react';
 
 const APPS = [
-  { label: 'Gmail', icon: '✉️', angle: 0 },
-  { label: 'WhatsApp', icon: '💬', angle: 51.4 },
-  { label: 'Slack', icon: '💼', angle: 102.8 },
-  { label: 'Notion', icon: '📓', angle: 154.2 },
-  { label: 'Drive', icon: '📁', angle: 205.6 },
-  { label: 'CRM', icon: '📊', angle: 257 },
-  { label: 'GitHub', icon: '🐙', angle: 308.4 },
+  { label: 'Gmail', icon: '/logos/email.svg', angle: 0 },
+  { label: 'WhatsApp', icon: '/logos/whatsapp.svg', angle: 51.4 },
+  { label: 'Slack', icon: '/logos/slack.svg', angle: 102.8 },
+  { label: 'Notion', icon: '/logos/notion.svg', angle: 154.2 },
+  { label: 'Drive', icon: FolderIcon, angle: 205.6 },
+  { label: 'CRM', icon: Building2Icon, angle: 257 },
+  { label: 'GitHub', icon: '/logos/github.svg', angle: 308.4 },
 ];
 
 const RADIUS = 190;
@@ -125,7 +126,11 @@ export default function SearchGraphSection() {
                     animationDuration: '40s',
                   }}
                 >
-                  <span style={{ fontSize: 22 }}>{app.icon}</span>
+                  {typeof app.icon === 'string' ? (
+                    <img src={app.icon} alt={app.label} width={22} height={22} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                  ) : (
+                    <app.icon size={22} style={{ color: '#3b82f6' }} />
+                  )}
                   <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(17,24,39,0.65)' }}>{app.label}</span>
                 </div>
               );
