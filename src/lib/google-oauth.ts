@@ -3,6 +3,7 @@ import { encrypt, decrypt } from "@/lib/encryption";
 
 const GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 const USERINFO_EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
+const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
 function getAppUrl() {
   return process.env.NEXT_PUBLIC_APP_URL
@@ -29,7 +30,7 @@ export function getGoogleAuthUrl(userId: string, returnTo: string) {
     response_type: "code",
     access_type: "offline",
     prompt: "consent",
-    scope: `${GMAIL_READONLY_SCOPE} ${USERINFO_EMAIL_SCOPE}`,
+    scope: `${GMAIL_READONLY_SCOPE} ${USERINFO_EMAIL_SCOPE} ${SHEETS_SCOPE}`,
     state,
   });
 

@@ -3,6 +3,7 @@ import { decode } from "html-entities";
 import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { googleSheetsChannel } from "@/inngest/channels/google-sheets";
+import { getValidGoogleAccessToken } from "@/lib/google-oauth";
 import ky from "ky";
 
 Handlebars.registerHelper("json", (context) => {
@@ -11,7 +12,6 @@ Handlebars.registerHelper("json", (context) => {
 
 type GoogleSheetsData = {
   variableName?: string;
-  apiKey?: string;
   spreadsheetId?: string;
   range?: string;
   values?: string;
@@ -23,13 +23,10 @@ export const googleSheetsExecutor: NodeExecutor<GoogleSheetsData> = async ({
   context,
   step,
   publish,
+  userId,
 }) => {
   await publish(googleSheetsChannel().status({ nodeId, status: "loading" }));
 
-  if (!data.apiKey) {
-    await publish(googleSheetsChannel().status({ nodeId, status: "error" }));
-    throw new NonRetriableError("Google Sheets node: API key is required");
-  }
   if (!data.spreadsheetId) {
     await publish(googleSheetsChannel().status({ nodeId, status: "error" }));
     throw new NonRetriableError("Google Sheets node: Spreadsheet ID is required");
@@ -56,11 +53,14 @@ export const googleSheetsExecutor: NodeExecutor<GoogleSheetsData> = async ({
   }
 
   try {
+    const accessToken = await step.run(`sheets-auth-${nodeId}`, () => getValidGoogleAccessToken(userId));
+
     const result = await step.run("sheets-append", async () => {
       const response = await ky.post(
         `https://sheets.googleapis.com/v4/spreadsheets/${data.spreadsheetId}/values/${encodeURIComponent(data.range!)
-        }:append?valueInputOption=USER_ENTERED&key=${data.apiKey}`,
+        }:append?valueInputOption=USER_ENTERED`,
         {
+          headers: { Authorization: `Bearer ${accessToken}` },
           json: {
             range: data.range,
             majorDimension: "ROWS",
@@ -82,6 +82,8 @@ export const googleSheetsExecutor: NodeExecutor<GoogleSheetsData> = async ({
     return result;
   } catch (error) {
     await publish(googleSheetsChannel().status({ nodeId, status: "error" }));
-    throw error;
+    throw error instanceof Error && /Connect your Google account|Reconnect your Google account/.test(error.message)
+      ? new NonRetriableError(error.message)
+      : error;
   }
 };
