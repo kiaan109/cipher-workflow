@@ -24,11 +24,18 @@ export const workflowsRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id: input.id, userId: ctx.auth.user.id },
-        include: { nodes: { select: { type: true } } },
+        include: {
+          nodes: { select: { type: true } },
+          connections: { select: { id: true } },
+        },
       });
 
       if (!hasRunnableWorkflow(workflow.nodes)) {
         throw new Error("Add at least one real node before executing this workflow.");
+      }
+
+      if (workflow.nodes.length >= 2 && workflow.connections.length === 0) {
+        throw new Error("Connect your nodes before executing this workflow.");
       }
 
       const executionId = createId();

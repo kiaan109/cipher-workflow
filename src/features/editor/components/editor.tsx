@@ -40,7 +40,8 @@ export const EditorError = () => {
 
 export const Editor = ({ workflowId }: { workflowId: string }) => {
   const {
-    data: workflow
+    data: workflow,
+    refetch: refetchWorkflow,
   } = useSuspenseWorkflow(workflowId);
 
   const setEditor = useSetAtom(editorAtom);
@@ -49,8 +50,6 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
   const saveWorkflow = useUpdateWorkflow();
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
-  const initialNodesRef = useRef<Node[]>(workflow.nodes);
-  const initialEdgesRef = useRef<Edge[]>(workflow.edges);
 
   const [nodes, setNodes] = useState<Node[]>(workflow.nodes);
   const [edges, setEdges] = useState<Edge[]>(workflow.edges);
@@ -123,14 +122,23 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
     [],
   );
 
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback(async () => {
     if (autoSaveTimer.current) {
       clearTimeout(autoSaveTimer.current);
       autoSaveTimer.current = null;
     }
-    setNodes(initialNodesRef.current);
-    setEdges(initialEdgesRef.current);
-  }, []);
+    // Pull the canonical saved state from the server rather than trusting a
+    // mount-time snapshot, which can silently drift once autosave invalidates
+    // and refetches this query in the background.
+    const { data } = await refetchWorkflow();
+    if (!data) {
+      toast.error("Couldn't reset workflow");
+      return;
+    }
+    setNodes(data.nodes);
+    setEdges(data.edges);
+    toast.success("Workflow reset to last saved state");
+  }, [refetchWorkflow]);
 
   const hasManualTrigger = useMemo(() => {
     return nodes.some((node) => node.type === NodeType.MANUAL_TRIGGER || node.type === NodeType.INITIAL);
@@ -155,7 +163,8 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
       >
         <Background />
         <Controls />
-        <MiniMap />
+        {/* Lifted clear of the AI Assistant FAB, which floats bottom-right across the dashboard */}
+        <MiniMap style={{ bottom: 90 }} />
         <Panel position="top-right">
           <AddNodeButton />
         </Panel>

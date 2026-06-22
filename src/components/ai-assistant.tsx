@@ -186,14 +186,14 @@ export function AiAssistant() {
     <>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 left-6 z-50 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-violet-700 shadow-lg hover:from-purple-500 hover:to-violet-600 transition-all duration-200 hover:scale-105 active:scale-95"
+        className="fixed bottom-6 right-6 z-50 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-violet-700 shadow-lg hover:from-purple-500 hover:to-violet-600 transition-all duration-200 hover:scale-105 active:scale-95"
         aria-label="Cipher AI Assistant"
       >
         {open ? <XIcon className="size-5 text-white" /> : <SparklesIcon className="size-5 text-white" />}
       </button>
 
       {open && (
-        <div className="fixed bottom-24 left-6 z-50 flex w-[400px] flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden">
+        <div className="fixed bottom-24 right-6 z-50 flex w-[400px] flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between bg-gradient-to-r from-purple-600 to-violet-700 px-4 py-3">
             <div className="flex items-center gap-2">
               <SparklesIcon className="size-4 text-white" />

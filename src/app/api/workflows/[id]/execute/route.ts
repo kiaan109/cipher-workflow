@@ -27,12 +27,23 @@ export async function POST(
 
   const workflow = await prisma.workflow.findUniqueOrThrow({
     where: { id: workflowId, userId: session.user.id },
-    select: { name: true, nodes: { select: { type: true } } },
+    select: {
+      name: true,
+      nodes: { select: { type: true } },
+      connections: { select: { id: true } },
+    },
   });
 
   if (!hasRunnableWorkflow(workflow.nodes)) {
     return Response.json(
       { error: "Add at least one real node before executing this workflow." },
+      { status: 400 },
+    );
+  }
+
+  if (workflow.nodes.length >= 2 && workflow.connections.length === 0) {
+    return Response.json(
+      { error: "Connect your nodes before executing this workflow." },
       { status: 400 },
     );
   }

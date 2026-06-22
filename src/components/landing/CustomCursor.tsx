@@ -68,7 +68,7 @@ export default function CustomCursor() {
         ref={dotRef}
         style={{
           position: 'fixed', width: 8, height: 8, borderRadius: '50%',
-          background: '#fff', transform: 'translate(-50%, -50%)',
+          background: '#111827', transform: 'translate(-50%, -50%)',
           pointerEvents: 'none', zIndex: 9999,
           transition: 'width 0.15s, height 0.15s',
         }}
@@ -79,7 +79,7 @@ export default function CustomCursor() {
           position: 'fixed',
           width: hovering ? 54 : 32, height: hovering ? 54 : 32,
           borderRadius: '50%',
-          border: hovering ? '1.5px solid #3b82f6' : '1px solid rgba(255,255,255,0.4)',
+          border: hovering ? '1.5px solid #3b82f6' : '1px solid rgba(17,24,39,0.35)',
           background: hovering ? 'rgba(59,130,246,0.08)' : 'transparent',
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none', zIndex: 9998,
