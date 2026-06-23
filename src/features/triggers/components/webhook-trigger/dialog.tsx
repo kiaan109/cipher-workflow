@@ -48,8 +48,8 @@ export const WebhookTriggerDialog = ({ open, onOpenChange, onSubmit, defaultValu
         {webhookUrl && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Your webhook URL</p>
-            <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-              <code className="flex-1 text-xs font-mono text-foreground truncate">{webhookUrl}</code>
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2 min-w-0">
+              <code className="flex-1 min-w-0 text-xs font-mono text-foreground truncate">{webhookUrl}</code>
               <Button size="icon" variant="ghost" className="size-7 shrink-0" onClick={handleCopy}>
                 {copied ? <CheckIcon className="size-3.5 text-emerald-500" /> : <CopyIcon className="size-3.5" />}
               </Button>

@@ -52,7 +52,9 @@ export async function POST(
   });
 
   const runUrl = getRunnerUrl();
-  fetch(runUrl, {
+  // Must be awaited — on Vercel, an un-awaited fetch can be dropped when the
+  // function returns, so the response would lie and say the run started.
+  await fetch(runUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
