@@ -44,8 +44,9 @@ export default function FooterSection() {
           <span className="accent-gradient-text">track 2 ready</span>
         </h2>
         <p style={{ color: 'rgba(17,24,39,0.7)', maxWidth: 760, margin: '0 auto 2rem', lineHeight: 1.7 }}>
-          This build is presented as a practical multi-agent workflow demo with an online prototype,
-          Band/Codeband positioning, and the core deliverables the event asks for.
+          Band.ai is the coordination layer, not a bolt-on integration: every AI agent node in a Cipher
+          workflow — GPT-5, Claude, Gemini, DeepSeek, Qwen3 — joins a shared Band room for that run,
+          posts its output there, and can see what every other agent already said before it acts.
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>

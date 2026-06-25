@@ -103,6 +103,22 @@ export default function LandingNavbar() {
           </span>
         </Link>
 
+        <span
+          className="hidden lg:inline-flex"
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: 'rgba(17,24,39,0.5)',
+            border: '1px solid rgba(17,24,39,0.12)',
+            borderRadius: 9999,
+            padding: '0.3rem 0.7rem',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+        >
+          Powered by Band.ai
+        </span>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="hidden md:flex">
           {navItems.map((item) =>
             item.target ? (

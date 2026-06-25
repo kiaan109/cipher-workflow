@@ -146,7 +146,7 @@ export default function HeroSection() {
               Universal AI Search &amp; Agent Memory
             </span>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb' }}>
-              New
+              Powered by Band.ai
             </span>
           </div>
         </motion.div>
@@ -179,7 +179,9 @@ export default function HeroSection() {
           }}
         >
           Cipher is your AI agent across every app — Gmail, WhatsApp, Slack, Notion, Drive, your CRM.
-          One search bar that searches, reasons, and acts across all of your connected tools.
+          One search bar that searches, reasons, and acts across all of your connected tools — every
+          AI agent runs inside a shared <strong>Band.ai</strong> room, so they coordinate with each other
+          in real time instead of working in isolation.
         </motion.p>
 
         {/* Universal Search Bar */}
