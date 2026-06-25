@@ -10,7 +10,7 @@ import HeroSection from '@/components/landing/HeroSection';
 import SearchGraphSection from '@/components/landing/SearchGraphSection';
 import WhyCipherSection from '@/components/landing/WhyCipherSection';
 import AgentShowcaseSection from '@/components/landing/AgentShowcaseSection';
-import StatsSection from '@/components/landing/StatsSection';
+import BandHowSection from '@/components/landing/BandHowSection';
 import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import BandIntegrationSection from '@/components/landing/BandIntegrationSection';
 import JudgesSection from '@/components/landing/JudgesSection';
@@ -44,7 +44,7 @@ export default function LandingPage() {
             <SearchGraphSection />
             <WhyCipherSection />
             <AgentShowcaseSection />
-            <StatsSection />
+            <BandHowSection />
             <HowItWorksSection />
             <BandIntegrationSection />
             <JudgesSection />
