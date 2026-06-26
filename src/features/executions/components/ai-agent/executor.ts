@@ -4,7 +4,7 @@ import { NonRetriableError } from "inngest";
 import type { NodeExecutor } from "@/features/executions/types";
 import { cipherChannel } from "@/inngest/channels/cipher";
 import { sendBandMessage } from "@/lib/band";
-import ky from "ky";
+import { callLLM } from "@/lib/llm";
 
 Handlebars.registerHelper("json", (ctx) => new Handlebars.SafeString(JSON.stringify(ctx, null, 2)));
 
@@ -38,24 +38,16 @@ export const aiAgentExecutor: NodeExecutor<AiAgentData> = async ({ data, nodeId,
 
   try {
     const result = await step.run("ai-agent-run", async () => {
-      const response = await ky.post("https://openrouter.ai/api/v1/chat/completions", {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://cipher-app-tau.vercel.app",
-          "X-Title": "Cipher AI Agent",
-        },
-        json: {
-          model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-        },
-        timeout: 60000,
-      }).json<{ choices: { message: { content: string } }[] }>();
-
-      const text = response.choices[0]?.message?.content || "";
+      // Tries `model` first, but falls through the shared free-model pool on
+      // a dead model (404) or rate limit (429) instead of hard-failing.
+      const text = await callLLM(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        model,
+        1200,
+      );
       if (bandRoomId) void sendBandMessage(bandRoomId, agentName, `✅ Response:\n${text}`);
       return {
         ...context,

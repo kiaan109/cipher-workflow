@@ -13,10 +13,10 @@ import { useEffect } from "react";
 import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
 
 const MODELS = [
-  { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (Free)" },
   { id: "openai/gpt-oss-20b:free", label: "GPT-OSS 20B (Free)" },
   { id: "openai/gpt-oss-120b:free", label: "GPT-OSS 120B (Free)" },
-  { id: "mistralai/mistral-7b-instruct:free", label: "Mistral 7B (Free)" },
+  { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (Free)" },
+  { id: "qwen/qwen3-next-80b-a3b-instruct:free", label: "Qwen3 80B (Free)" },
 ];
 
 const schema = z.object({
