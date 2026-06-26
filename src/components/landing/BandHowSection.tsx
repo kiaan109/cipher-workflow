@@ -12,7 +12,7 @@ const POINTS = [
   {
     icon: UsersIcon,
     title: '11 node types speak through it',
-    desc: 'OpenAI, Anthropic, Gemini, Mistral, and Qwen agents, plus AI Agent, AI Chain, Summarizer, Text Classifier, Info Extractor, and the Autonomous Search Agent all post their output into the same room, under their own name.',
+    desc: 'OpenAI, Llama, Gemma, Mistral, and Qwen agents, plus AI Agent, AI Chain, Summarizer, Text Classifier, Info Extractor, and the Autonomous Search Agent all post their output into the same room, under their own name.',
   },
   {
     icon: MessagesSquareIcon,

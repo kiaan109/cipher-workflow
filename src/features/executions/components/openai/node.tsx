@@ -7,6 +7,7 @@ import { OpenAiDialog, OpenAiFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchOpenAiRealtimeToken } from "./actions";
 import { OPENAI_CHANNEL_NAME } from "@/inngest/channels/openai";
+import { MODEL } from "./executor";
 
 type OpenAiNodeData = {
   variableName?: string;
@@ -46,7 +47,7 @@ export const OpenAiNode = memo((props: NodeProps<OpenAiNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `llama-3.3 (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `${MODEL} (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (

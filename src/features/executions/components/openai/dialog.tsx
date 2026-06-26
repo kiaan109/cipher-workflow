@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
+import { MODEL } from "./executor";
 
 const formSchema = z.object({
   variableName: z
@@ -91,7 +92,7 @@ export const OpenAiDialog = ({
         <DialogHeader>
           <DialogTitle>OpenAI Agent</DialogTitle>
           <DialogDescription>
-            Powered by OpenRouter · <code className="text-xs">meta-llama/llama-3.3-8b-instruct:free</code>
+            Powered by OpenRouter · <code className="text-xs">{MODEL}</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

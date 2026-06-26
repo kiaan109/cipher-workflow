@@ -2,11 +2,13 @@
 
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { memo, useState } from "react";
+import { BotIcon } from "lucide-react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { AnthropicDialog, AnthropicFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchAnthropicRealtimeToken } from "./actions";
 import { ANTHROPIC_CHANNEL_NAME } from "@/inngest/channels/anthropic";
+import { MODEL } from "./executor";
 
 type AnthropicNodeData = {
   variableName?: string;
@@ -46,7 +48,7 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `deepseek-r1 (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `${MODEL} (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (
@@ -60,8 +62,8 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
       <BaseExecutionNode
         {...props}
         id={props.id}
-        icon="/logos/anthropic.svg"
-        name="Anthropic"
+        icon={BotIcon}
+        name="Llama"
         status={nodeStatus}
         description={description}
         onSettings={handleOpenSettings}

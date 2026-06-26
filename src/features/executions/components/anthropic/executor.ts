@@ -6,7 +6,11 @@ import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
-const AGENT_NAME = "Anthropic Agent";
+// Internally still the ANTHROPIC node type (renaming it would need a DB
+// migration for saved workflows) — but there's no free Anthropic/Claude
+// model on OpenRouter, so this is honestly labeled and run as Llama instead.
+export const AGENT_NAME = "Llama Agent";
+export const MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
 type AnthropicData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
@@ -24,7 +28,7 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({ data, nod
 
   try {
     const text = await step.run(`anthropic-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "openai/gpt-oss-20b:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], MODEL),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(anthropicChannel().status({ nodeId, status: "success" }));

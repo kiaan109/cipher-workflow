@@ -6,7 +6,8 @@ import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
-const AGENT_NAME = "OpenAI Agent";
+export const AGENT_NAME = "OpenAI Agent";
+export const MODEL = "openai/gpt-oss-20b:free";
 
 type OpenAiData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
@@ -24,7 +25,7 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async ({ data, nodeId, c
 
   try {
     const text = await step.run(`openai-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "openai/gpt-oss-20b:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], MODEL),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(openAiChannel().status({ nodeId, status: "success" }));

@@ -7,6 +7,7 @@ import { GeminiDialog, GeminiFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchGeminiRealtimeToken } from "./actions";
 import { GEMINI_CHANNEL_NAME } from "@/inngest/channels/gemini";
+import { MODEL } from "./executor";
 
 type GeminiNodeData = {
   variableName?: string;
@@ -46,7 +47,7 @@ export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `gemma-4-26b (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `${MODEL} (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (
@@ -61,7 +62,7 @@ export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
         {...props}
         id={props.id}
         icon="/logos/gemini.svg"
-        name="Gemini"
+        name="Gemma"
         status={nodeStatus}
         description={description}
         onSettings={handleOpenSettings}

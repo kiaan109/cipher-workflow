@@ -21,8 +21,7 @@ const ROW1: Integration[] = [
   { name: 'Mailchimp', logo: '/logos/mailchimp.svg' },
   { name: 'Shopify', logo: '/logos/shopify.svg' },
   { name: 'OpenAI', logo: '/logos/openai.svg' },
-  { name: 'Anthropic', logo: '/logos/anthropic.svg' },
-  { name: 'Gemini', logo: '/logos/gemini.svg' },
+  { name: 'Gemma', logo: '/logos/gemini.svg' },
   { name: 'Mistral', logo: '/logos/mistral.svg' },
 ];
 

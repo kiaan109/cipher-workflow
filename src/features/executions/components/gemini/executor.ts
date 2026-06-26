@@ -6,7 +6,11 @@ import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
-const AGENT_NAME = "Gemini Agent";
+// Internally still the GEMINI node type (renaming it would need a DB
+// migration for saved workflows) — but the free OpenRouter model here is
+// Gemma, not Gemini, so it's honestly labeled as Gemma.
+export const AGENT_NAME = "Gemma Agent";
+export const MODEL = "google/gemma-4-31b-it:free";
 
 type GeminiData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
@@ -24,7 +28,7 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({ data, nodeId, c
 
   try {
     const text = await step.run(`gemini-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "google/gemma-4-31b-it:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], MODEL),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(geminiChannel().status({ nodeId, status: "success" }));

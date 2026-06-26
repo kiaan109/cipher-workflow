@@ -45,7 +45,7 @@ export default function FooterSection() {
         </h2>
         <p style={{ color: 'rgba(17,24,39,0.7)', maxWidth: 760, margin: '0 auto 2rem', lineHeight: 1.7 }}>
           Band.ai is the coordination layer, not a bolt-on integration: every AI agent node in a Cipher
-          workflow — GPT-5, Claude, Gemini, DeepSeek, Qwen3 — joins a shared Band room for that run,
+          workflow — GPT-OSS, Llama, Gemma, Mistral, Qwen3 — joins a shared Band room for that run,
           posts its output there, and can see what every other agent already said before it acts.
         </p>
 

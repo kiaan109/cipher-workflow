@@ -7,6 +7,7 @@ import { MistralDialog, MistralFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchMistralToken } from "./actions";
 import { MISTRAL_CHANNEL_NAME } from "@/inngest/channels/mistral";
+import { MODEL } from "./executor";
 
 type MistralNodeData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 type MistralNodeType = Node<MistralNodeData>;
@@ -33,7 +34,7 @@ export const MistralNode = memo((props: NodeProps<MistralNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `mistral (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `${MODEL} (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (

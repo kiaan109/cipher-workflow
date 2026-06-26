@@ -6,7 +6,8 @@ import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
-const AGENT_NAME = "Qwen Agent";
+export const AGENT_NAME = "Qwen Agent";
+export const MODEL = "qwen/qwen3-coder:free";
 
 type QwenData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
@@ -24,7 +25,7 @@ export const qwenExecutor: NodeExecutor<QwenData> = async ({ data, nodeId, conte
 
   try {
     const text = await step.run(`qwen-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "qwen/qwen3-coder:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], MODEL),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(qwenChannel().status({ nodeId, status: "success" }));

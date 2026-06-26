@@ -7,6 +7,7 @@ import { QwenDialog, QwenFormValues } from "./dialog";
 import { useNodeStatus } from "../../hooks/use-node-status";
 import { fetchQwenToken } from "./actions";
 import { QWEN_CHANNEL_NAME } from "@/inngest/channels/qwen";
+import { MODEL } from "./executor";
 
 type QwenNodeData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 type QwenNodeType = Node<QwenNodeData>;
@@ -33,7 +34,7 @@ export const QwenNode = memo((props: NodeProps<QwenNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `qwen (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
+    ? `${MODEL} (OpenRouter): ${nodeData.userPrompt.slice(0, 50)}...`
     : "Not configured";
 
   return (

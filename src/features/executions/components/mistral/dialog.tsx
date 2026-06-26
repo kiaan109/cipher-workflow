@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
+import { MODEL } from "./executor";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
@@ -49,7 +50,7 @@ export const MistralDialog = ({ open, onOpenChange, onSubmit, defaultValues = {}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mistral AI Configuration</DialogTitle>
-          <DialogDescription>Configure the AI model and prompts. Uses mistral-7b-instruct (OpenRouter) via OpenRouter.</DialogDescription>
+          <DialogDescription>Powered by OpenRouter · <code className="text-xs">{MODEL}</code> (a community Mistral fine-tune, not Mistral AI's own API)</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((v) => { onSubmit(v); onOpenChange(false); })} className="space-y-6 mt-4">

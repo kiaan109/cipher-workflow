@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
+import { MODEL } from "./executor";
 
 const formSchema = z.object({
   variableName: z
@@ -78,7 +79,7 @@ export const GeminiDialog = ({
     }
   }, [open, defaultValues, form]);
 
-  const watchVariableName = form.watch("variableName") || "myGemini";
+  const watchVariableName = form.watch("variableName") || "myGemma";
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values);
@@ -89,9 +90,9 @@ export const GeminiDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Gemini Agent</DialogTitle>
+          <DialogTitle>Gemma Agent</DialogTitle>
           <DialogDescription>
-            Powered by OpenRouter · <code className="text-xs">google/gemma-4-26b-a4b-it:free</code>
+            Powered by OpenRouter · <code className="text-xs">{MODEL}</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -107,7 +108,7 @@ export const GeminiDialog = ({
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="myGemini"
+                      placeholder="myGemma"
                       {...field}
                     />
                   </FormControl>

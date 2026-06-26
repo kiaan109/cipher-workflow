@@ -2,7 +2,7 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MailIcon, MousePointerIcon, SearchIcon } from "lucide-react";
+import { BotIcon, GlobeIcon, MailIcon, MousePointerIcon, SearchIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -47,10 +47,10 @@ const aiNodes: NodeTypeOption[] = [
   { type: NodeType.AI_MEMORY, label: "Memory Buffer", description: "Store and retrieve conversation memory", icon: "🧠" },
   { type: NodeType.EMBEDDINGS, label: "Embeddings", description: "Convert text to vector embeddings", icon: "🔢" },
   { type: NodeType.VECTOR_STORE, label: "Vector Store", description: "Store & query vectors (Pinecone)", icon: "🌲" },
-  { type: NodeType.GEMINI, label: "Gemini", description: "Google Gemini AI generation", icon: "/logos/gemini.svg" },
-  { type: NodeType.OPENAI, label: "OpenAI", description: "OpenAI GPT text generation", icon: "/logos/openai.svg" },
-  { type: NodeType.ANTHROPIC, label: "Anthropic", description: "Claude AI text generation", icon: "/logos/anthropic.svg" },
-  { type: NodeType.MISTRAL, label: "Mistral", description: "Mistral AI text generation", icon: "/logos/mistral.svg" },
+  { type: NodeType.GEMINI, label: "Gemma", description: "Google Gemma (free) text generation", icon: "/logos/gemini.svg" },
+  { type: NodeType.OPENAI, label: "OpenAI", description: "OpenAI GPT-OSS (free) text generation", icon: "/logos/openai.svg" },
+  { type: NodeType.ANTHROPIC, label: "Llama", description: "Meta Llama (free) text generation", icon: BotIcon },
+  { type: NodeType.MISTRAL, label: "Mistral", description: "Community Mistral fine-tune (free) text generation", icon: "/logos/mistral.svg" },
   { type: NodeType.QWEN, label: "Qwen", description: "Qwen AI text generation", icon: "/logos/qwen.svg" },
 ];
 

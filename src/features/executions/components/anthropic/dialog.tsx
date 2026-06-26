@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
+import { MODEL } from "./executor";
 
 const formSchema = z.object({
   variableName: z
@@ -78,7 +79,7 @@ export const AnthropicDialog = ({
     }
   }, [open, defaultValues, form]);
 
-  const watchVariableName = form.watch("variableName") || "myAnthropic";
+  const watchVariableName = form.watch("variableName") || "myLlama";
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     onSubmit(values);
@@ -89,9 +90,9 @@ export const AnthropicDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Anthropic Agent</DialogTitle>
+          <DialogTitle>Llama Agent</DialogTitle>
           <DialogDescription>
-            Powered by OpenRouter · <code className="text-xs">deepseek/deepseek-r1:free</code>
+            Powered by OpenRouter · <code className="text-xs">{MODEL}</code>
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -107,7 +108,7 @@ export const AnthropicDialog = ({
                   <FormLabel>Variable Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="myAnthropic"
+                      placeholder="myLlama"
                       {...field}
                     />
                   </FormControl>

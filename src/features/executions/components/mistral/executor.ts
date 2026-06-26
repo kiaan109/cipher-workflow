@@ -6,7 +6,10 @@ import { sendBandMessage } from "@/lib/band";
 import { renderTemplate } from "@/lib/template";
 import { callLLM } from "@/lib/llm";
 
-const AGENT_NAME = "Mistral Agent";
+// Mistral AI doesn't publish a working free model on OpenRouter directly —
+// this is a community fine-tune of Mistral's open-weight base model.
+export const AGENT_NAME = "Mistral Agent";
+export const MODEL = "cognitivecomputations/dolphin-mistral-24b-venice-edition:free";
 
 type MistralData = { variableName?: string; systemPrompt?: string; userPrompt?: string };
 
@@ -24,7 +27,7 @@ export const mistralExecutor: NodeExecutor<MistralData> = async ({ data, nodeId,
 
   try {
     const text = await step.run(`mistral-generate-${nodeId}`, () =>
-      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], "cognitivecomputations/dolphin-mistral-24b-venice-edition:free"),
+      callLLM([{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }], MODEL),
     );
     if (bandRoomId) void sendBandMessage(bandRoomId, AGENT_NAME, `Response:\n${text}`);
     await publish(mistralChannel().status({ nodeId, status: "success" }));
