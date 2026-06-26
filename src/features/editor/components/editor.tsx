@@ -160,6 +160,7 @@ export const Editor = ({ workflowId }: { workflowId: string }) => {
         panOnScroll
         panOnDrag={false}
         selectionOnDrag
+        deleteKeyCode={['Backspace', 'Delete']}
       >
         <Background />
         <Controls />

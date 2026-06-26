@@ -18,6 +18,13 @@ function hasRunnableWorkflow(nodes: { type: NodeType }[]) {
   return nodes.some((node) => node.type !== NodeType.INITIAL);
 }
 
+const TRIGGER_TYPES: NodeType[] = [
+  NodeType.MANUAL_TRIGGER,
+  NodeType.WEBHOOK_TRIGGER,
+  NodeType.SCHEDULE_TRIGGER,
+  NodeType.INITIAL,
+];
+
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -34,8 +41,12 @@ export const workflowsRouter = createTRPCRouter({
         throw new Error("Add at least one real node before executing this workflow.");
       }
 
+      if (!workflow.nodes.some((n) => TRIGGER_TYPES.includes(n.type))) {
+        throw new Error("Add a Manual Trigger node before executing this workflow.");
+      }
+
       if (workflow.nodes.length >= 2 && workflow.connections.length === 0) {
-        throw new Error("Connect your nodes before executing this workflow.");
+        throw new Error("Connect your Manual Trigger to the rest of your nodes before executing this workflow.");
       }
 
       const executionId = createId();

@@ -64,7 +64,10 @@ export const NotionDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} 
               <FormItem>
                 <FormLabel>Integration Token</FormLabel>
                 <FormControl><Input type="password" placeholder="secret_..." {...field} /></FormControl>
-                <FormDescription>From Notion → Settings → Integrations</FormDescription>
+                <FormDescription>
+                  From <span className="font-mono">notion.so/my-integrations</span> → New integration →
+                  Configuration tab → copy the &quot;Internal Integration Secret&quot;.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )} />
@@ -72,7 +75,18 @@ export const NotionDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} 
               <FormItem>
                 <FormLabel>Database ID</FormLabel>
                 <FormControl><Input placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" {...field} /></FormControl>
-                <FormDescription>The 32-char ID from the database URL</FormDescription>
+                <FormDescription className="space-y-1.5">
+                  <span className="block">
+                    The 32-character ID from your Notion database URL. Must be a database, not a
+                    regular page — to create one: open Notion → New page → type <span className="font-mono">/database</span> →
+                    select &quot;Database - Full page&quot; → copy the ID from the URL after the last dash.
+                  </span>
+                  <span className="block">
+                    Then connect it: open your database → click the <span className="font-mono">···</span> menu →
+                    Connections → search for and add your integration. Without this step, Notion will
+                    reject requests even with a valid token.
+                  </span>
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )} />

@@ -31,12 +31,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
 
 const formSchema = z.object({
   variableName: z
     .string()
     .min(1, { message: "Variable name is required" })
-    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, { 
+    .regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, {
       message: "Variable name must start with a letter or underscore and container only letters, numbers, and underscores",
     }),
   endpoint: z.string()
@@ -44,7 +45,9 @@ const formSchema = z.object({
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   body: z
     .string()
-    .optional()
+    .optional(),
+  retryOnFail: z.boolean().optional(),
+  maxRetries: z.number().optional(),
 });
 
 export type HttpRequestFormValues = z.infer<typeof formSchema>;
@@ -69,6 +72,8 @@ export const HttpRequestDialog = ({
       endpoint: defaultValues.endpoint || "",
       method: defaultValues.method || "GET",
       body: defaultValues.body || "",
+      retryOnFail: defaultValues.retryOnFail ?? RETRY_ON_FAIL_DEFAULTS.retryOnFail,
+      maxRetries: defaultValues.maxRetries ?? RETRY_ON_FAIL_DEFAULTS.maxRetries,
     },
   });
 
@@ -80,6 +85,8 @@ export const HttpRequestDialog = ({
         endpoint: defaultValues.endpoint || "",
         method: defaultValues.method || "GET",
         body: defaultValues.body || "",
+        retryOnFail: defaultValues.retryOnFail ?? RETRY_ON_FAIL_DEFAULTS.retryOnFail,
+        maxRetries: defaultValues.maxRetries ?? RETRY_ON_FAIL_DEFAULTS.maxRetries,
       });
     }
   }, [open, defaultValues, form]);
@@ -200,6 +207,7 @@ export const HttpRequestDialog = ({
               )}
               />
             )}
+            <RetryOnFailFields />
             <DialogFooter className="mt-4">
               <Button type="submit">Save</Button>
             </DialogFooter>

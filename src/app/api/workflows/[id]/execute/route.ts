@@ -1,6 +1,6 @@
 import { requireAuth } from "@/lib/auth-utils";
 import prisma from "@/lib/db";
-import { ExecutionStatus } from "@/generated/prisma";
+import { ExecutionStatus, NodeType } from "@/generated/prisma";
 import { createId } from "@paralleldrive/cuid2";
 
 export const maxDuration = 15;
@@ -17,6 +17,13 @@ function getRunnerUrl() {
 function hasRunnableWorkflow(nodes: { type: string }[]) {
   return nodes.some((node) => node.type !== "INITIAL");
 }
+
+const TRIGGER_TYPES: string[] = [
+  NodeType.MANUAL_TRIGGER,
+  NodeType.WEBHOOK_TRIGGER,
+  NodeType.SCHEDULE_TRIGGER,
+  NodeType.INITIAL,
+];
 
 export async function POST(
   _req: Request,
@@ -41,9 +48,16 @@ export async function POST(
     );
   }
 
+  if (!workflow.nodes.some((n) => TRIGGER_TYPES.includes(n.type))) {
+    return Response.json(
+      { error: "Add a Manual Trigger node before executing this workflow." },
+      { status: 400 },
+    );
+  }
+
   if (workflow.nodes.length >= 2 && workflow.connections.length === 0) {
     return Response.json(
-      { error: "Connect your nodes before executing this workflow." },
+      { error: "Connect your Manual Trigger to the rest of your nodes before executing this workflow." },
       { status: 400 },
     );
   }

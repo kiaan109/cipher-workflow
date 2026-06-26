@@ -10,6 +10,7 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
+import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
 
 const FREE_MODELS = [
   { id: "meta-llama/llama-3.3-70b-instruct:free", label: "Llama 3.3 70B (Free)" },
@@ -24,6 +25,8 @@ const schema = z.object({
   systemPrompt: z.string().optional(),
   userPrompt: z.string().min(1, "Prompt is required"),
   model: z.string().optional(),
+  retryOnFail: z.boolean().optional(),
+  maxRetries: z.number().optional(),
 });
 
 export type AiAgentFormValues = z.infer<typeof schema>;
@@ -31,8 +34,8 @@ export type AiAgentFormValues = z.infer<typeof schema>;
 interface Props { open: boolean; onOpenChange: (o: boolean) => void; onSubmit: (v: AiAgentFormValues) => void; defaultValues?: Partial<AiAgentFormValues>; }
 
 export const AiAgentDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
-  const form = useForm<AiAgentFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", systemPrompt: "", userPrompt: "", model: FREE_MODELS[0].id, ...defaultValues } });
-  useEffect(() => { if (open) form.reset({ variableName: "", systemPrompt: "", userPrompt: "", model: FREE_MODELS[0].id, ...defaultValues }); }, [open]);
+  const form = useForm<AiAgentFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", systemPrompt: "", userPrompt: "", model: FREE_MODELS[0].id, ...RETRY_ON_FAIL_DEFAULTS, ...defaultValues } });
+  useEffect(() => { if (open) form.reset({ variableName: "", systemPrompt: "", userPrompt: "", model: FREE_MODELS[0].id, ...RETRY_ON_FAIL_DEFAULTS, ...defaultValues }); }, [open]);
   const watchVar = form.watch("variableName") || "agent";
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,6 +60,7 @@ export const AiAgentDialog = ({ open, onOpenChange, onSubmit, defaultValues = {}
             <FormField control={form.control} name="userPrompt" render={({ field }) => (
               <FormItem><FormLabel>Task / Prompt</FormLabel><FormControl><Textarea placeholder="{{previousStep.text}}" className="font-mono text-sm h-24" {...field} /></FormControl><FormDescription>Supports Handlebars variables</FormDescription><FormMessage /></FormItem>
             )} />
+            <RetryOnFailFields />
             <DialogFooter><Button type="submit">Save</Button></DialogFooter>
           </form>
         </Form>

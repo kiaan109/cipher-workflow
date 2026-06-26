@@ -13,11 +13,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
 
 const formSchema = z.object({
   variableName: z.string().min(1, "Variable name is required").regex(/^[A-Za-z_$][A-Za-z0-9_$]*$/, "Must be a valid identifier"),
   systemPrompt: z.string().optional(),
   userPrompt: z.string().min(1, "User prompt is required"),
+  retryOnFail: z.boolean().optional(),
+  maxRetries: z.number().optional(),
 });
 
 export type MistralFormValues = z.infer<typeof formSchema>;
@@ -32,11 +35,11 @@ interface Props {
 export const MistralDialog = ({ open, onOpenChange, onSubmit, defaultValues = {} }: Props) => {
   const form = useForm<MistralFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { variableName: "", systemPrompt: "", userPrompt: "", ...defaultValues },
+    defaultValues: { variableName: "", systemPrompt: "", userPrompt: "", ...RETRY_ON_FAIL_DEFAULTS, ...defaultValues },
   });
 
   useEffect(() => {
-    if (open) form.reset({ variableName: "", systemPrompt: "", userPrompt: "", ...defaultValues });
+    if (open) form.reset({ variableName: "", systemPrompt: "", userPrompt: "", ...RETRY_ON_FAIL_DEFAULTS, ...defaultValues });
   }, [open, defaultValues, form]);
 
   const watchVar = form.watch("variableName") || "myMistral";
@@ -74,6 +77,7 @@ export const MistralDialog = ({ open, onOpenChange, onSubmit, defaultValues = {}
                 <FormMessage />
               </FormItem>
             )} />
+            <RetryOnFailFields />
             <DialogFooter><Button type="submit">Save</Button></DialogFooter>
           </form>
         </Form>

@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { RetryOnFailFields, RETRY_ON_FAIL_DEFAULTS } from "../shared/retry-on-fail-fields";
 
 const formSchema = z.object({
   variableName: z
@@ -34,6 +35,8 @@ const formSchema = z.object({
     }),
   systemPrompt: z.string().optional(),
   userPrompt: z.string().min(1, "User prompt is required"),
+  retryOnFail: z.boolean().optional(),
+  maxRetries: z.number().optional(),
 });
 
 export type AnthropicFormValues = z.infer<typeof formSchema>;
@@ -57,6 +60,8 @@ export const AnthropicDialog = ({
       variableName: defaultValues.variableName || "",
       systemPrompt: defaultValues.systemPrompt || "",
       userPrompt: defaultValues.userPrompt || "",
+      retryOnFail: defaultValues.retryOnFail ?? RETRY_ON_FAIL_DEFAULTS.retryOnFail,
+      maxRetries: defaultValues.maxRetries ?? RETRY_ON_FAIL_DEFAULTS.maxRetries,
     },
   });
 
@@ -67,6 +72,8 @@ export const AnthropicDialog = ({
         variableName: defaultValues.variableName || "",
         systemPrompt: defaultValues.systemPrompt || "",
         userPrompt: defaultValues.userPrompt || "",
+        retryOnFail: defaultValues.retryOnFail ?? RETRY_ON_FAIL_DEFAULTS.retryOnFail,
+        maxRetries: defaultValues.maxRetries ?? RETRY_ON_FAIL_DEFAULTS.maxRetries,
       });
     }
   }, [open, defaultValues, form]);
@@ -153,6 +160,7 @@ export const AnthropicDialog = ({
               </FormItem>
             )}
             />
+            <RetryOnFailFields />
             <DialogFooter className="mt-4">
               <Button type="submit">Save</Button>
             </DialogFooter>

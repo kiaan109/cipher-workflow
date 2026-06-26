@@ -27,7 +27,7 @@ export const ScheduleTriggerDialog = ({ open, onOpenChange, onSubmit, defaultVal
   const form = useForm<ScheduleTriggerFormValues>({ resolver: zodResolver(schema), defaultValues: { variableName: "", cron: "0 9 * * *", timezone: "UTC", ...defaultValues } });
   useEffect(() => { if (open) form.reset({ variableName: "", cron: "0 9 * * *", timezone: "UTC", ...defaultValues }); }, [open]);
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Schedule Trigger</DialogTitle><DialogDescription>Run workflow on a schedule (cron)</DialogDescription></DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}><DialogContent><DialogHeader><DialogTitle>Schedule Trigger</DialogTitle><DialogDescription>Runs automatically in the background on this schedule — no need to keep this tab open or click Execute.</DialogDescription></DialogHeader>
       <Form {...form}><form onSubmit={form.handleSubmit(v => { onSubmit(v); onOpenChange(false); })} className="space-y-4 mt-2">
         <FormField control={form.control} name="variableName" render={({ field }) => (<FormItem><FormLabel>Variable Name</FormLabel><FormControl><Input placeholder="scheduleInfo" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <div className="space-y-1"><FormLabel className="text-sm">Quick Presets</FormLabel>
