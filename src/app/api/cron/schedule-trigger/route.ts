@@ -17,7 +17,13 @@ type ScheduleNodeData = {
   cron?: string;
   timezone?: string;
   lastScheduledRun?: string;
+  lastNotifiedAt?: string;
 };
+
+// Don't email more than once per workflow per window, no matter how often
+// the schedule actually fires — daily/weekly schedules always notify since
+// they're never within the window of their own last run.
+const NOTIFY_THROTTLE_MS = 10 * 60 * 1000;
 
 // Vercel Cron hits this once a minute. For every Schedule Trigger node, we
 // check whether the cron expression's most recent scheduled fire time falls
@@ -62,9 +68,18 @@ export async function GET(req: Request) {
     const alreadyRan = lastRun && lastRun.getTime() >= prevFire.getTime();
     if (!dueNow || alreadyRan) continue;
 
+    const lastNotified = data.lastNotifiedAt ? new Date(data.lastNotifiedAt) : null;
+    const shouldNotify = !lastNotified || now.getTime() - lastNotified.getTime() > NOTIFY_THROTTLE_MS;
+
     await prisma.node.update({
       where: { id: node.id },
-      data: { data: { ...data, lastScheduledRun: prevFire.toISOString() } },
+      data: {
+        data: {
+          ...data,
+          lastScheduledRun: prevFire.toISOString(),
+          ...(shouldNotify ? { lastNotifiedAt: now.toISOString() } : {}),
+        },
+      },
     });
 
     const executionId = createId();
@@ -80,7 +95,7 @@ export async function GET(req: Request) {
         "content-type": "application/json",
         "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "",
       },
-      body: JSON.stringify({ workflowId: node.workflowId, executionId: execution.id }),
+      body: JSON.stringify({ workflowId: node.workflowId, executionId: execution.id, notify: shouldNotify }),
     }).catch(() => {});
 
     triggered.push(node.workflowId);

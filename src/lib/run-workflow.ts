@@ -30,10 +30,15 @@ export async function runWorkflow({
   workflowId,
   executionId,
   initialData = {},
+  notify = true,
 }: {
   workflowId: string;
   executionId: string;
   initialData?: Record<string, unknown>;
+  // Scheduled/cron-triggered runs default this to false — a workflow firing
+  // every minute would otherwise send a "started" + "success" email per run
+  // and blow through the email provider's daily quota within hours.
+  notify?: boolean;
 }) {
   try {
     const [workflow, user] = await Promise.all([
@@ -48,7 +53,7 @@ export async function runWorkflow({
     const parallelLevels = computeParallelLevels(workflow.nodes, workflow.connections);
 
     // Send started email
-    if (userEmail) {
+    if (notify && userEmail) {
       void sendWorkflowEmail({ to: userEmail, workflowName, executionId, status: "started" });
     }
 
@@ -135,7 +140,7 @@ export async function runWorkflow({
               output: JSON.parse(JSON.stringify({ _steps: executionSteps, ...context })),
             },
           });
-          if (userEmail) void sendWorkflowEmail({ to: userEmail, workflowName, executionId, status: "failed", error: r.error });
+          if (notify && userEmail) void sendWorkflowEmail({ to: userEmail, workflowName, executionId, status: "failed", error: r.error });
           return;
         }
       }
@@ -156,7 +161,7 @@ export async function runWorkflow({
       },
     });
 
-    if (userEmail) void sendWorkflowEmail({ to: userEmail, workflowName, executionId, status: "success" });
+    if (notify && userEmail) void sendWorkflowEmail({ to: userEmail, workflowName, executionId, status: "success" });
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

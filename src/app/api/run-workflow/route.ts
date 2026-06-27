@@ -15,10 +15,11 @@ export async function POST(req: Request) {
     }
   }
 
-  const { workflowId, executionId, initialData } = await req.json() as {
+  const { workflowId, executionId, initialData, notify } = await req.json() as {
     workflowId: string;
     executionId: string;
     initialData?: Record<string, unknown>;
+    notify?: boolean;
   };
 
   if (!workflowId || !executionId) {
@@ -26,6 +27,6 @@ export async function POST(req: Request) {
   }
 
   // Run synchronously — this function has its own maxDuration budget
-  await runWorkflow({ workflowId, executionId, initialData });
+  await runWorkflow({ workflowId, executionId, initialData, notify });
   return Response.json({ ok: true });
 }
